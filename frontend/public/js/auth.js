@@ -8,7 +8,7 @@
 // GOOGLE OAUTH CONFIGURATION
 // Get your Client ID at: https://console.cloud.google.com/apis/credentials
 // ============================================
-const GOOGLE_CLIENT_ID = ''; // Add your Google Client ID here
+const GOOGLE_CLIENT_ID = '1064706061315-euungp6jbuki8tfhbaec9evlot75fqsr.apps.googleusercontent.com'; // Your Google Client ID
 
 // ============================================
 // AUTH FUNCTIONS
