@@ -107,9 +107,7 @@ class Settings(BaseSettings):
     # ============================================================
     # SUPPORTED LANGUAGES
     # ============================================================
-    SUPPORTED_LANGUAGES: List[str] = [
-        "en", "hi", "ta", "te", "kn", "ml", "bn", "mr", "gu", "pa"
-    ]
+    SUPPORTED_LANGUAGES: str = "en,hi,ta,te,kn,ml,bn,mr,gu,pa"
     
     class Config:
         env_file = ".env"
