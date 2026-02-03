@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     # ============================================================
     # CORS SETTINGS
     # ============================================================
-    CORS_ORIGINS: List[str] = ["*"]
+    CORS_ORIGINS: str = "*"  # Comma-separated origins or "*" for all
     
     # ============================================================
     # RATE LIMITING
