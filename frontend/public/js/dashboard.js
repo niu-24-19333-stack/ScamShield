@@ -52,7 +52,8 @@ async function initApp() {
   
   try {
     // Verify token and get user info
-    const response = await fetch('http://localhost:8000/api/v1/users/me', {
+    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+    const response = await fetch(`${apiUrl}/api/v1/users/me`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -117,7 +118,8 @@ async function loadScanHistory() {
   const token = localStorage.getItem('scamshield_access_token');
   
   try {
-    const response = await fetch('http://localhost:8000/api/v1/scans/history?limit=50', {
+    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+    const response = await fetch(`${apiUrl}/api/v1/scans/history?limit=50`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -152,7 +154,8 @@ async function loadUserStats() {
   const token = localStorage.getItem('scamshield_access_token');
   
   try {
-    const response = await fetch('http://localhost:8000/api/v1/users/me/stats', {
+    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+    const response = await fetch(`${apiUrl}/api/v1/users/me/stats`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -442,7 +445,8 @@ async function startXrayScan() {
   let result;
   try {
     const token = localStorage.getItem('scamshield_access_token');
-    const response = await fetch('http://localhost:8000/api/v1/scans/', {
+    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+    const response = await fetch(`${apiUrl}/api/v1/scans/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -708,11 +712,16 @@ function blockSender() {
 // ==========================================
 // API KEY MANAGEMENT
 // ==========================================
-const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
 let currentApiKey = null;
 let isApiKeyVisible = false;
 
 // Check for existing API key on load
+// API Keys functionality
+const API_BASE_URL = (() => {
+  const configUrl = window.SCAMSHIELD_CONFIG?.API_URL;
+  return configUrl ? `${configUrl}/api/v1` : 'https://scamshield-api-hocl.onrender.com/api/v1';
+})();
+
 async function checkExistingApiKey() {
   // Check localStorage first (for demo without backend)
   const storedKey = localStorage.getItem('scamshield_api_key');
@@ -1047,7 +1056,8 @@ async function saveSettings() {
   try {
     // Update profile
     if (token) {
-      await fetch('http://localhost:8000/api/v1/users/me', {
+      const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+      await fetch(`${apiUrl}/api/v1/users/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1057,7 +1067,7 @@ async function saveSettings() {
       });
       
       // Update settings
-      await fetch('http://localhost:8000/api/v1/users/me/settings', {
+      await fetch(`${apiUrl}/api/v1/users/me/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1107,7 +1117,8 @@ async function loadSettings() {
   try {
     if (token) {
       // Load settings from backend
-      const response = await fetch('http://localhost:8000/api/v1/users/me/settings', {
+      const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+      const response = await fetch(`${apiUrl}/api/v1/users/me/settings`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       

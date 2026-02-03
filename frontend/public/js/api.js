@@ -8,10 +8,17 @@
 // ============================================
 
 const API_CONFIG = {
-  // Change this to your production URL when deploying
-  BASE_URL: window.location.hostname === 'localhost' 
-    ? 'http://localhost:8000/api/v1'
-    : '/api/v1',
+  // Get API URL from config.js
+  BASE_URL: (() => {
+    const configUrl = window.SCAMSHIELD_CONFIG?.API_URL;
+    if (configUrl) {
+      return `${configUrl}/api/v1`;
+    }
+    // Fallback for development
+    return window.location.hostname === 'localhost' 
+      ? 'http://localhost:8000/api/v1'
+      : 'https://scamshield-api-hocl.onrender.com/api/v1';
+  })(),
   
   // Token storage keys
   ACCESS_TOKEN_KEY: 'scamshield_access_token',
