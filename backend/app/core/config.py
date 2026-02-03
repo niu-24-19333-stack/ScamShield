@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "ScamShield API"
     APP_VERSION: str = "4.0.0"
     DEBUG: bool = False
-    FRONTEND_URL: str = "http://localhost:5500"  # For OAuth redirects
+    FRONTEND_URL: str = "https://symphonious-biscuit-688196.netlify.app"  # For OAuth redirects
     
     # API Authentication
     API_SECRET_KEY: str = "change-me-in-production"
@@ -28,13 +28,13 @@ class Settings(BaseSettings):
     # ============================================================
     # DATABASE (MongoDB)
     # ============================================================
-    MONGODB_URL: str = "mongodb://localhost:27017"
+    MONGODB_URL: str = "mongodb+srv://morbius:m0rbius@cluster0.rsl5ak3.mongodb.net/scamshield"
     MONGODB_DB_NAME: str = "scamshield"
     
     # ============================================================
     # JWT AUTHENTICATION
     # ============================================================
-    JWT_SECRET_KEY: str = "your-super-secret-jwt-key-change-in-production"
+    JWT_SECRET_KEY: str = "e5d8c2b7a9f3e6d1c4b8a2f5e9d3c7b1a6f0e4d8c2b6a0f4e8d2c6b0a4f8e2d6"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     # ============================================================
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
-    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+    GOOGLE_REDIRECT_URI: str = "http://scamshield-api-hocl.onrender.com/api/v1/auth/google/callback"
     
     # ============================================================
     # GITHUB OAUTH (optional)
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     # ============================================================
     GITHUB_CLIENT_ID: Optional[str] = None
     GITHUB_CLIENT_SECRET: Optional[str] = None
-    GITHUB_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/github/callback"
+    GITHUB_REDIRECT_URI: str = "https://scamshield-api-hocl.onrender.com/api/v1/auth/github/callback"
     
     # ============================================================
     # AI PROVIDERS
@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     # ============================================================
     # CORS SETTINGS
     # ============================================================
-    CORS_ORIGINS: str = "*"  # Comma-separated origins or "*" for all
+    CORS_ORIGINS: str = "https://symphonious-biscuit-688196.netlify.app"  # Comma-separated origins or "*" for all
     
     # ============================================================
     # RATE LIMITING
