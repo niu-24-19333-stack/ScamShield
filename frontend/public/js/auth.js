@@ -15,6 +15,16 @@ const GOOGLE_CLIENT_ID = '1064706061315-euungp6jbuki8tfhbaec9evlot75fqsr.apps.go
 // ============================================
 
 /**
+ * Redirect based on user role
+ */
+function redirectBasedOnRole(user = null) {
+  const userData = user || api.getUser();
+  const isAdmin = userData && userData.role === 'admin';
+  const redirectUrl = isAdmin ? './admin.html' : './dashboard.html';
+  window.location.href = redirectUrl;
+}
+
+/**
  * Handle login form submission
  */
 async function handleLogin(event) {
@@ -48,9 +58,11 @@ async function handleLogin(event) {
     
     showToast('Login successful! Redirecting...', 'success');
     
-    // Redirect to dashboard
+    // Check user role and redirect accordingly
+    const user = response.user || api.getUser();
+    
     setTimeout(() => {
-      window.location.href = './dashboard.html';
+      redirectBasedOnRole(user);
     }, 1000);
     
   } catch (error) {
@@ -300,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Redirect if already logged in (on login/signup pages)
   const isAuthPage = document.body.classList.contains('auth-page');
   if (isAuthPage && api.isAuthenticated()) {
-    window.location.href = './dashboard.html';
+    redirectBasedOnRole();
   }
 });
 
@@ -393,7 +405,7 @@ function initGoogleGSI(resolve, reject) {
         const result = await api.googleTokenLogin(response.credential);
         showToast('Google login successful! Redirecting...', 'success');
         setTimeout(() => {
-          window.location.href = './dashboard.html';
+          redirectBasedOnRole(result.user);
         }, 1000);
         resolve(result);
       } catch (error) {
@@ -499,11 +511,11 @@ function handleOAuthCallback() {
           api.setUser(user);
         }
         setTimeout(() => {
-          window.location.href = './dashboard.html';
+          redirectBasedOnRole(user);
         }, 1000);
       }).catch(() => {
         setTimeout(() => {
-          window.location.href = './dashboard.html';
+          redirectBasedOnRole();
         }, 1000);
       });
       
