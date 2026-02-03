@@ -26,9 +26,25 @@ async def connect_to_mongodb():
     db_name = os.getenv("MONGODB_DB_NAME", "scamshield")
     
     print(f"[DB] Connecting to MongoDB...")
+    print(f"[DB] URL: {mongodb_url[:30]}..." if len(mongodb_url) > 30 else f"[DB] URL: {mongodb_url}")
     
-    client = AsyncIOMotorClient(mongodb_url)
-    database = client[db_name]
+    try:
+        # Add connection timeout for cloud deployments
+        client = AsyncIOMotorClient(
+            mongodb_url,
+            serverSelectionTimeoutMS=10000,
+            connectTimeoutMS=10000,
+            socketTimeoutMS=10000
+        )
+        database = client[db_name]
+        
+        # Test connection
+        await client.admin.command('ping')
+        print(f"[DB] MongoDB ping successful!")
+    except Exception as e:
+        print(f"[DB] Warning: MongoDB connection issue: {e}")
+        print(f"[DB] App will continue but database features may not work")
+        return
     
     # Import all document models
     from app.db.models.user import User
@@ -40,23 +56,26 @@ async def connect_to_mongodb():
     from app.db.models.scammer import ScammerFingerprint
     from app.db.models.token_blacklist import TokenBlacklist
     
-    # Initialize Beanie with all document models
-    await init_beanie(
-        database=database,
-        document_models=[
-            User,
-            UserSettings,
-            Subscription,
-            Plan,
-            ScanRequest,
-            BlockedThreat,
-            HoneypotSession,
-            ScammerFingerprint,
-            TokenBlacklist,
-        ]
-    )
-    
-    print(f"[DB] Connected to MongoDB: {db_name}")
+    try:
+        # Initialize Beanie with all document models
+        await init_beanie(
+            database=database,
+            document_models=[
+                User,
+                UserSettings,
+                Subscription,
+                Plan,
+                ScanRequest,
+                BlockedThreat,
+                HoneypotSession,
+                ScammerFingerprint,
+                TokenBlacklist,
+            ]
+        )
+        print(f"[DB] Connected to MongoDB: {db_name}")
+    except Exception as e:
+        print(f"[DB] Warning: Beanie init failed: {e}")
+        print(f"[DB] App will continue but some features may not work")
 
 
 async def close_mongodb_connection():
