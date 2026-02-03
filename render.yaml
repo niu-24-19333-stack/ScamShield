@@ -1,0 +1,33 @@
+# Render.com deployment configuration
+# This file tells Render how to deploy your backend
+
+services:
+  - type: web
+    name: scamshield-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    rootDir: backend
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MONGODB_URL
+        sync: false  # You'll set this manually from MongoDB Atlas
+      - key: REDIS_URL
+        sync: false  # You'll set this manually from Upstash
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        value: "*"  # Will be updated after frontend deployment
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false

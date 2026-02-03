@@ -1,0 +1,8 @@
+# Logs
+logs/
+*.log
+
+# SSL certificates (add your own)
+*.pem
+*.key
+*.crt

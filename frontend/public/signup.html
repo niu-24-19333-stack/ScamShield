@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — ScamShield Pro</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --cream: #F5F2EB;
+      --ink: #0A0A0A;
+      --crimson: #C41E3A;
+      --text-muted: #6B6B6B;
+      --border: #E5E5E5;
+      --white: #FFFFFF;
+      --success: #059669;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Animated background */
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(196, 30, 58, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 0, 0, 0.1) 0%, transparent 50%);
+    }
+    
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--crimson);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: rise 15s infinite;
+    }
+    
+    .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+    .particle:nth-child(2) { left: 20%; animation-delay: 2s; }
+    .particle:nth-child(3) { left: 30%; animation-delay: 4s; }
+    .particle:nth-child(4) { left: 40%; animation-delay: 1s; }
+    .particle:nth-child(5) { left: 50%; animation-delay: 3s; }
+    .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+    .particle:nth-child(7) { left: 70%; animation-delay: 2.5s; }
+    .particle:nth-child(8) { left: 80%; animation-delay: 4.5s; }
+    .particle:nth-child(9) { left: 90%; animation-delay: 1.5s; }
+    
+    @keyframes rise {
+      0% { 
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+      }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.3; }
+      100% { 
+        transform: translateY(-100vh) scale(1);
+        opacity: 0;
+      }
+    }
+    
+    /* Signup card */
+    .signup-card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+      background: var(--white);
+      border-radius: 24px;
+      padding: 48px 40px;
+      box-shadow: 
+        0 0 0 1px rgba(0,0,0,0.05),
+        0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--crimson), #8B0000);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+    }
+    
+    .logo-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: white;
+      fill: none;
+    }
+    
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    
+    .logo-text span {
+      color: var(--crimson);
+    }
+    
+    /* Progress Steps */
+    .progress-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.3s;
+    }
+    
+    .step-dot.active {
+      background: var(--crimson);
+      transform: scale(1.2);
+    }
+    
+    .step-dot.completed {
+      background: var(--success);
+    }
+    
+    .step-line {
+      width: 40px;
+      height: 2px;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    
+    .step-line.completed {
+      background: var(--success);
+    }
+    
+    /* Header */
+    .card-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    
+    .card-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    
+    .card-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    
+    /* Form Steps */
+    .form-step {
+      display: none;
+    }
+    
+    .form-step.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Form */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    input[type="email"],
+    input[type="password"],
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
+      color: var(--ink);
+      transition: all 0.2s;
+    }
+    
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 44px;
+    }
+    
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--crimson);
+      box-shadow: 0 0 0 4px rgba(196, 30, 58, 0.1);
+    }
+    
+    input::placeholder {
+      color: #B0B0B0;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      display: flex;
+    }
+    
+    .password-toggle:hover {
+      color: var(--ink);
+    }
+    
+    .password-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* Password Strength */
+    .password-strength {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    
+    .strength-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+    
+    .strength-bar.weak { background: #ef4444; }
+    .strength-bar.fair { background: #f59e0b; }
+    .strength-bar.good { background: #3b82f6; }
+    .strength-bar.strong { background: var(--success); }
+    
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: var(--ink);
+      color: var(--white);
+    }
+    
+    .btn-primary:hover {
+      background: var(--crimson);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: var(--ink);
+      border: 2px solid var(--border);
+    }
+    
+    .btn-outline:hover {
+      border-color: var(--ink);
+      background: rgba(0,0,0,0.02);
+    }
+    
+    .btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    /* Social Buttons */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .social-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .social-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .social-btn:hover {
+      border-color: var(--ink);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .social-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Success State */
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--success), #047857);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      animation: successPop 0.5s ease;
+    }
+    
+    .success-icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: white;
+    }
+    
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Feature list */
+    .features-list {
+      margin: 24px 0;
+      text-align: left;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .feature-item svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--success);
+      flex-shrink: 0;
+    }
+    
+    /* Footer */
+    .card-footer {
+      text-align: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .card-footer p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .card-footer a {
+      color: var(--crimson);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .card-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Terms */
+    .terms-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+    
+    .terms-text a {
+      color: var(--crimson);
+      text-decoration: none;
+    }
+    
+    .terms-text a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .toast {
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: white;
+      animation: toastIn 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--crimson); }
+    .toast.info { background: var(--ink); }
+    
+    @keyframes toastIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    /* Mobile */
+    @media (max-width: 480px) {
+      body { padding: 16px; }
+      .signup-card { padding: 32px 24px; }
+      .card-header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="bg-pattern"></div>
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+  
+  <!-- Signup Card -->
+  <div class="signup-card">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <path d="M12 3L4 7v6c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V7l-8-4z"/>
+        </svg>
+      </div>
+      <div class="logo-text">Scam<span>Shield</span></div>
+    </div>
+    
+    <!-- Progress -->
+    <div class="progress-steps">
+      <div class="step-dot active" data-step="1"></div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-dot" data-step="2"></div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-dot" data-step="3"></div>
+    </div>
+    
+    <form id="signupForm">
+      <!-- Step 1: Account -->
+      <div class="form-step active" id="step1">
+        <div class="card-header">
+          <h1>Create account</h1>
+          <p>Start your protection journey today</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Create password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" name="password" placeholder="Min. 8 characters" required minlength="8">
+            <button type="button" class="password-toggle" aria-label="Toggle password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="password-strength">
+            <div class="strength-bar" id="s1"></div>
+            <div class="strength-bar" id="s2"></div>
+            <div class="strength-bar" id="s3"></div>
+            <div class="strength-bar" id="s4"></div>
+          </div>
+        </div>
+        
+        <button type="button" class="btn btn-primary btn-full" onclick="nextStep(2)">
+          <span>Continue</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+        
+        <p class="terms-text">
+          By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+        </p>
+        
+        <div class="divider"><span>or sign up with</span></div>
+        
+        <div class="social-buttons">
+          <button type="button" class="social-btn" id="googleSignupBtn">
+            <svg viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google
+          </button>
+          <button type="button" class="social-btn" id="githubSignupBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            GitHub
+          </button>
+        </div>
+      </div>
+      
+      <!-- Step 2: Profile -->
+      <div class="form-step" id="step2">
+        <div class="card-header">
+          <h1>Your profile</h1>
+          <p>Tell us a bit about yourself</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="fullName">Full name</label>
+          <input type="text" id="fullName" name="fullName" placeholder="John Doe" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="useCase">How will you use ScamShield?</label>
+          <select id="useCase" name="useCase">
+            <option value="">Select your use case</option>
+            <option value="personal">Personal Protection</option>
+            <option value="business">Business Security</option>
+            <option value="family">Family Safety</option>
+            <option value="developer">API Integration</option>
+          </select>
+        </div>
+        
+        <div class="btn-row">
+          <button type="button" class="btn btn-outline" onclick="prevStep(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(3)">
+            Continue
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Step 3: Success -->
+      <div class="form-step" id="step3">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="3">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        
+        <div class="card-header">
+          <h1>You're all set!</h1>
+          <p>Your account has been created successfully</p>
+        </div>
+        
+        <div class="features-list">
+          <div class="feature-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            <span>Real-time scam detection powered by AI</span>
+          </div>
+          <div class="feature-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            <span>24/7 protection across all channels</span>
+          </div>
+          <div class="feature-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            <span>Instant threat alerts and reports</span>
+          </div>
+          <div class="feature-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            <span>API access for developers</span>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Go to Dashboard</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+    
+    <div class="card-footer" id="footerLink">
+      <p>Already have an account? <a href="./login.html">Sign in</a></p>
+    </div>
+  </div>
+  
+  <div id="toastContainer" class="toast-container"></div>
+  
+  <script>
+    let currentStep = 1;
+    
+    // Password toggle
+    document.querySelector('.password-toggle').addEventListener('click', function() {
+      const input = document.getElementById('password');
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      this.innerHTML = isPassword 
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+    
+    // Password strength
+    document.getElementById('password').addEventListener('input', function() {
+      const val = this.value;
+      const bars = [document.getElementById('s1'), document.getElementById('s2'), document.getElementById('s3'), document.getElementById('s4')];
+      
+      // Reset
+      bars.forEach(b => b.className = 'strength-bar');
+      
+      if (val.length === 0) return;
+      
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[a-z]/.test(val) && /[A-Z]/.test(val)) score++;
+      if (/\d/.test(val)) score++;
+      if (/[^a-zA-Z0-9]/.test(val)) score++;
+      
+      const classes = ['weak', 'fair', 'good', 'strong'];
+      for (let i = 0; i < score; i++) {
+        bars[i].classList.add(classes[Math.min(score - 1, 3)]);
+      }
+    });
+    
+    // Step navigation
+    function nextStep(step) {
+      // Validate current step
+      if (currentStep === 1) {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!email) {
+          showToast('Please enter your email', 'error');
+          return;
+        }
+        if (password.length < 8) {
+          showToast('Password must be at least 8 characters', 'error');
+          return;
+        }
+      }
+      
+      if (currentStep === 2) {
+        const name = document.getElementById('fullName').value.trim();
+        if (!name) {
+          showToast('Please enter your name', 'error');
+          return;
+        }
+      }
+      
+      // Update steps
+      document.getElementById(`step${currentStep}`).classList.remove('active');
+      document.getElementById(`step${step}`).classList.add('active');
+      
+      // Update dots
+      document.querySelectorAll('.step-dot').forEach((dot, i) => {
+        dot.classList.remove('active', 'completed');
+        if (i + 1 < step) dot.classList.add('completed');
+        if (i + 1 === step) dot.classList.add('active');
+      });
+      
+      // Update lines
+      if (step >= 2) document.getElementById('line1').classList.add('completed');
+      if (step >= 3) document.getElementById('line2').classList.add('completed');
+      
+      // Hide footer on success step
+      if (step === 3) {
+        document.getElementById('footerLink').style.display = 'none';
+      }
+      
+      currentStep = step;
+    }
+    
+    function prevStep(step) {
+      document.getElementById(`step${currentStep}`).classList.remove('active');
+      document.getElementById(`step${step}`).classList.add('active');
+      
+      document.querySelectorAll('.step-dot').forEach((dot, i) => {
+        dot.classList.remove('active', 'completed');
+        if (i + 1 < step) dot.classList.add('completed');
+        if (i + 1 === step) dot.classList.add('active');
+      });
+      
+      if (step < 2) document.getElementById('line1').classList.remove('completed');
+      if (step < 3) document.getElementById('line2').classList.remove('completed');
+      
+      currentStep = step;
+    }
+    
+    // Toast
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'toastIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+    
+    // Form submit
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const name = document.getElementById('fullName').value.trim();
+      const phone = document.getElementById('phone')?.value.trim() || null;
+      
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      
+      // Disable button and show loading
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Creating account...';
+      
+      try {
+        // Call the API to register
+        const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            full_name: name,
+            phone: phone
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.detail || 'Registration failed');
+        }
+        
+        // Store tokens and user data
+        if (data.access_token) {
+          localStorage.setItem('scamshield_access_token', data.access_token);
+        }
+        if (data.refresh_token) {
+          localStorage.setItem('scamshield_refresh_token', data.refresh_token);
+        }
+        if (data.user) {
+          localStorage.setItem('scamshield_user', JSON.stringify(data.user));
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('userEmail', data.user.email);
+          localStorage.setItem('userName', data.user.full_name || data.user.email.split('@')[0]);
+        }
+        
+        showToast('Account created! Redirecting...', 'success');
+        
+        setTimeout(() => {
+          window.location.href = './dashboard.html';
+        }, 1000);
+        
+      } catch (error) {
+        showToast(error.message || 'Registration failed. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+    });
+    
+    // Google OAuth signup
+    document.getElementById('googleSignupBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/auth/google');
+        const data = await response.json();
+        
+        if (data.auth_url) {
+          window.location.href = data.auth_url;
+        } else if (data.detail) {
+          showToast(data.detail, 'error');
+        }
+      } catch (error) {
+        showToast('Failed to start Google signup. Make sure OAuth is configured.', 'error');
+      }
+    });
+    
+    // GitHub OAuth signup
+    document.getElementById('githubSignupBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/auth/github');
+        const data = await response.json();
+        
+        if (data.auth_url) {
+          window.location.href = data.auth_url;
+        } else if (data.detail) {
+          showToast(data.detail, 'error');
+        }
+      } catch (error) {
+        showToast('Failed to start GitHub signup. Make sure OAuth is configured.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

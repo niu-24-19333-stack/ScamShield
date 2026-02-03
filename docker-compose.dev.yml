@@ -1,0 +1,71 @@
+# ===========================================
+# ScamShield - Development Docker Compose
+# ===========================================
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # Backend API Service (Development)
+  # ===========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: scamshield-api-dev
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/scamshield_dev
+      - DEBUG=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    depends_on:
+      - mongodb
+    networks:
+      - scamshield-dev-network
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+  # ===========================================
+  # MongoDB Database (Development)
+  # ===========================================
+  mongodb:
+    image: mongo:7.0
+    container_name: scamshield-db-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_dev_data:/data/db
+    networks:
+      - scamshield-dev-network
+
+  # ===========================================
+  # Mongo Express (Database UI)
+  # ===========================================
+  mongo-express:
+    image: mongo-express
+    container_name: scamshield-db-ui
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongodb
+    networks:
+      - scamshield-dev-network
+
+networks:
+  scamshield-dev-network:
+    driver: bridge
+
+volumes:
+  mongodb_dev_data:
+    driver: local
