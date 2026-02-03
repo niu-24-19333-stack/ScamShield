@@ -27,23 +27,46 @@ async def create_admin():
     admin_password = "Thakur.4321"
     admin_name = "ScamShield Admin"
     
+    # Hash the password
+    password_hash = hash_password(admin_password)
+    
     # Check if admin already exists
     existing_admin = await User.find_one(User.email == admin_email)
     if existing_admin:
         print(f"❌ Admin user already exists: {admin_email}")
         print(f"   Role: {existing_admin.role.value}")
         print(f"   Active: {existing_admin.is_active}")
+        print(f"   Has password: {'Yes' if existing_admin.password_hash else 'No'}")
         
         # Update role if needed
+        updates_made = False
         if existing_admin.role != UserRole.ADMIN:
             existing_admin.role = UserRole.ADMIN
-            await existing_admin.save()
+            updates_made = True
             print(f"✅ Updated role to admin for: {admin_email}")
         
+        # Set password if missing (for OAuth users)
+        if not existing_admin.password_hash:
+            existing_admin.password_hash = password_hash
+            existing_admin.auth_provider = AuthProvider.LOCAL  # Allow both OAuth and password login
+            updates_made = True
+            print(f"✅ Set password for existing OAuth user: {admin_email}")
+        
+        # Ensure admin is verified and active
+        if not existing_admin.is_verified:
+            existing_admin.is_verified = True
+            updates_made = True
+        
+        if not existing_admin.is_active:
+            existing_admin.is_active = True
+            updates_made = True
+        
+        if updates_made:
+            existing_admin.update_timestamp()
+            await existing_admin.save()
+            print(f"✅ Admin user updated successfully!")
+        
         return
-    
-    # Hash the password
-    password_hash = hash_password(admin_password)
     
     # Create admin user
     admin_user = User(

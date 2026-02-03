@@ -14,7 +14,12 @@ from app.core.config import settings
 
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Handle bcrypt version compatibility issues
+try:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+except Exception:
+    # Fallback configuration for bcrypt compatibility
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__default_ident="2b")
 
 
 # ============================================================
@@ -25,14 +30,37 @@ def hash_password(password: str) -> str:
     """
     Hash a password using bcrypt.
     """
-    return pwd_context.hash(password)
+    # Truncate password if longer than 72 bytes (bcrypt limit)
+    if len(password.encode('utf-8')) > 72:
+        password = password[:72]
+    
+    try:
+        return pwd_context.hash(password)
+    except Exception as e:
+        # Fallback to direct bcrypt if passlib fails
+        import bcrypt
+        password_bytes = password.encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password_bytes, salt)
+        return hashed.decode('utf-8')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verify a password against its hash.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    # Truncate password if longer than 72 bytes (bcrypt limit)
+    if len(plain_password.encode('utf-8')) > 72:
+        plain_password = plain_password[:72]
+    
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        # Fallback to direct bcrypt if passlib fails
+        import bcrypt
+        password_bytes = plain_password.encode('utf-8')
+        hashed_bytes = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
 
 
 # ============================================================
