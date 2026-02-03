@@ -5,7 +5,7 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://YOUR-RENDER-APP.onrender.com/api/:splat"
+  to = "https://scamshield-api-hocl.onrender.com/api/:splat"
   status = 200
   force = true
 
