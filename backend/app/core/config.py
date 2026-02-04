@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "ScamShield API"
     APP_VERSION: str = "4.0.0"
     DEBUG: bool = False
-    FRONTEND_URL: str = "https://symphonious-biscuit-688196.netlify.app"  # For OAuth redirects
+    FRONTEND_URL: str = "https://scam-shield-1yzg-42nohqy3p-morbius-projects-43b3a6c9.vercel.app"  # For OAuth redirects
     
     # API Authentication
     API_SECRET_KEY: str = "change-me-in-production"
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     # ============================================================
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
-    GOOGLE_REDIRECT_URI: str = "http://scamshield-api-hocl.onrender.com/api/v1/auth/google/callback"
+    GOOGLE_REDIRECT_URI: str = "https://scamshield-api-hocl.onrender.com/api/v1/auth/google/callback"
     
     # ============================================================
     # GITHUB OAUTH (optional)
@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     # ============================================================
     # CORS SETTINGS
     # ============================================================
-    CORS_ORIGINS: str = "https://symphonious-biscuit-688196.netlify.app"  # Comma-separated origins or "*" for all
+    CORS_ORIGINS: str = "https://scam-shield-1yzg-42nohqy3p-morbius-projects-43b3a6c9.vercel.app"  # Comma-separated origins or "*" for all
     
     # ============================================================
     # RATE LIMITING
