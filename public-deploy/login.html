@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In — ScamShield Pro</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --cream: #F5F2EB;
+      --ink: #0A0A0A;
+      --crimson: #C41E3A;
+      --text-muted: #6B6B6B;
+      --border: #E5E5E5;
+      --white: #FFFFFF;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Animated background grid */
+    .bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(rgba(196, 30, 58, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(196, 30, 58, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridMove 20s linear infinite;
+    }
+    
+    @keyframes gridMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(60px, 60px); }
+    }
+    
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.4;
+      animation: float 8s ease-in-out infinite;
+    }
+    
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--crimson);
+      top: -200px;
+      right: -100px;
+      animation-delay: 0s;
+    }
+    
+    .orb-2 {
+      width: 300px;
+      height: 300px;
+      background: #8B0000;
+      bottom: -150px;
+      left: -100px;
+      animation-delay: -4s;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -30px) scale(1.1); }
+    }
+    
+    /* Login card */
+    .login-card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      background: var(--white);
+      border-radius: 24px;
+      padding: 48px 40px;
+      box-shadow: 
+        0 0 0 1px rgba(0,0,0,0.05),
+        0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--crimson), #8B0000);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+    }
+    
+    .logo-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: white;
+      fill: none;
+    }
+    
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    
+    .logo-text span {
+      color: var(--crimson);
+    }
+    
+    /* Header */
+    .card-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .card-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    
+    .card-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    
+    /* Form */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .label-row label {
+      margin-bottom: 0;
+    }
+    
+    .forgot-link {
+      font-size: 0.8rem;
+      color: var(--crimson);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
+      color: var(--ink);
+      transition: all 0.2s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--crimson);
+      box-shadow: 0 0 0 4px rgba(196, 30, 58, 0.1);
+    }
+    
+    input::placeholder {
+      color: #B0B0B0;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .password-toggle:hover {
+      color: var(--ink);
+    }
+    
+    .password-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* Checkbox */
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      cursor: pointer;
+    }
+    
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--crimson);
+      cursor: pointer;
+    }
+    
+    .checkbox-row span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    /* Button */
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: var(--ink);
+      color: var(--white);
+    }
+    
+    .btn-primary:hover {
+      background: var(--crimson);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+    }
+    
+    .btn-primary svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 28px 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    
+    .divider span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Social buttons */
+    .social-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .social-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      font-family: inherit;
+      color: var(--ink);
+      transition: all 0.2s;
+    }
+    
+    .social-btn:hover {
+      border-color: var(--ink);
+      background: rgba(0,0,0,0.02);
+    }
+    
+    .social-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* Footer */
+    .card-footer {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .card-footer p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .card-footer a {
+      color: var(--crimson);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .card-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .toast {
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: white;
+      animation: toastIn 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .toast.success { background: #059669; }
+    .toast.error { background: var(--crimson); }
+    .toast.info { background: var(--ink); }
+    
+    @keyframes toastIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    /* Mobile */
+    @media (max-width: 480px) {
+      body { padding: 16px; }
+      .login-card { padding: 32px 24px; }
+      .card-header h1 { font-size: 1.5rem; }
+      .social-buttons { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background effects -->
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  
+  <!-- Login Card -->
+  <div class="login-card">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2">
+          <path d="M12 3L4 7v6c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V7l-8-4z"/>
+        </svg>
+      </div>
+      <div class="logo-text">Scam<span>Shield</span></div>
+    </div>
+    
+    <div class="card-header">
+      <h1>Welcome back</h1>
+      <p>Enter your credentials to continue</p>
+    </div>
+    
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+      
+      <div class="form-group">
+        <div class="label-row">
+          <label for="password">Password</label>
+          <a href="#" class="forgot-link">Forgot?</a>
+        </div>
+        <div class="input-wrapper">
+          <input type="password" id="password" name="password" placeholder="••••••••" required>
+          <button type="button" class="password-toggle" aria-label="Toggle password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <label class="checkbox-row">
+        <input type="checkbox" name="remember">
+        <span>Remember me for 30 days</span>
+      </label>
+      
+      <button type="submit" class="btn-submit btn-primary">
+        <span>Sign in</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </form>
+    
+    <div class="divider"><span>or</span></div>
+    
+    <div class="social-buttons">
+      <button type="button" class="social-btn" id="googleLoginBtn">
+        <svg viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Google
+      </button>
+      <button type="button" class="social-btn" id="githubLoginBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+        GitHub
+      </button>
+    </div>
+    
+    <div class="card-footer">
+      <p>Don't have an account? <a href="./signup.html">Create one</a></p>
+    </div>
+  </div>
+  
+  <div id="toastContainer" class="toast-container"></div>
+  
+  <!-- Forgot Password Modal -->
+  <div id="forgotPasswordModal" class="modal-overlay">
+    <div class="modal-content">
+      <button type="button" class="modal-close" id="closeForgotModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+      
+      <div class="modal-header">
+        <h2>Reset Password</h2>
+        <p>Enter your email address and we'll send you a reset link</p>
+      </div>
+      
+      <form id="forgotPasswordForm">
+        <div class="form-group">
+          <label for="resetEmail">Email address</label>
+          <input type="email" id="resetEmail" name="email" placeholder="you@example.com" required>
+        </div>
+        
+        <button type="submit" class="btn-submit btn-primary">
+          <span>Send Reset Link</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </form>
+      
+      <div id="resetSuccess" class="reset-success" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <h3>Check your email</h3>
+        <p>We've sent a password reset link to your email address.</p>
+        <p class="note">For demo purposes, the reset token has been logged to the console.</p>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-content {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--cream);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .modal-close:hover {
+      background: var(--border);
+    }
+    
+    .modal-close svg {
+      width: 18px;
+      height: 18px;
+      color: var(--ink);
+    }
+    
+    .modal-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .modal-header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    
+    .modal-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    .reset-success {
+      text-align: center;
+      padding: 20px 0;
+    }
+    
+    .reset-success svg {
+      width: 64px;
+      height: 64px;
+      color: #22c55e;
+      margin-bottom: 16px;
+    }
+    
+    .reset-success h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    
+    .reset-success p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    
+    .reset-success .note {
+      font-size: 0.8rem;
+      color: var(--crimson);
+      background: rgba(196, 30, 58, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+  </style>
+  
+  <script>
+    // Password toggle
+    document.querySelector('.password-toggle').addEventListener('click', function() {
+      const input = document.getElementById('password');
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      this.innerHTML = isPassword 
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+    
+    // Toast function
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'toastIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Form submit
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      
+      if (!email || !password) {
+        showToast('Please fill in all fields', 'error');
+        return;
+      }
+      
+      // Disable button and show loading
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Logging in...';
+      
+      try {
+        // Get API URL from config
+        const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+        
+        // Call the API to login
+        const response = await fetch(`${apiUrl}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.detail || 'Login failed');
+        }
+        
+        // Store tokens
+        if (data.tokens && data.tokens.access_token) {
+          localStorage.setItem('scamshield_access_token', data.tokens.access_token);
+          localStorage.setItem('scamshield_refresh_token', data.tokens.refresh_token);
+        }
+        
+        // Store user data
+        if (data.user) {
+          localStorage.setItem('scamshield_user', JSON.stringify(data.user));
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('userEmail', data.user.email);
+          localStorage.setItem('userName', data.user.full_name || data.user.email.split('@')[0]);
+        }
+        
+        showToast('Login successful! Redirecting...', 'success');
+        
+        // Redirect based on role
+        const isAdmin = data.user && data.user.role === 'admin';
+        setTimeout(() => {
+          window.location.href = isAdmin ? './admin.html' : './dashboard.html';
+        }, 1000);
+        
+      } catch (error) {
+        showToast(error.message || 'Login failed. Please check your credentials.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+    });
+    
+    // Social login placeholder
+    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+      try {
+        const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+        const response = await fetch(`${apiUrl}/api/v1/auth/google`);
+        const data = await response.json();
+        
+        if (data.auth_url) {
+          window.location.href = data.auth_url;
+        } else if (data.detail) {
+          showToast(data.detail, 'error');
+        }
+      } catch (error) {
+        showToast('Failed to start Google login. Make sure OAuth is configured.', 'error');
+      }
+    });
+    
+    document.getElementById('githubLoginBtn').addEventListener('click', async () => {
+      try {
+        const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+        const response = await fetch(`${apiUrl}/api/v1/auth/github`);
+        const data = await response.json();
+        
+        if (data.auth_url) {
+          window.location.href = data.auth_url;
+        } else if (data.detail) {
+          showToast(data.detail, 'error');
+        }
+      } catch (error) {
+        showToast('Failed to start GitHub login. Make sure OAuth is configured.', 'error');
+      }
+    });
+    
+    // Handle OAuth callback (tokens in URL hash)
+    (function handleOAuthCallback() {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      
+      // Also check for error in query params
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      
+      if (error) {
+        showToast('OAuth login failed: ' + error, 'error');
+        // Clear URL params
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+      
+      if (accessToken && refreshToken) {
+        // Store tokens
+        localStorage.setItem('scamshield_access_token', accessToken);
+        localStorage.setItem('scamshield_refresh_token', refreshToken);
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // Clear URL hash
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Fetch user info with the token
+        const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+        fetch(`${apiUrl}/api/v1/users/me`, {
+          headers: {
+            'Authorization': 'Bearer ' + accessToken
+          }
+        })
+        .then(response => response.json())
+        .then(userData => {
+          if (userData.email) {
+            localStorage.setItem('scamshield_user', JSON.stringify(userData));
+            localStorage.setItem('userEmail', userData.email);
+            localStorage.setItem('userName', userData.full_name || userData.email.split('@')[0]);
+            
+            showToast('Login successful! Redirecting...', 'success');
+            
+            // Redirect based on role
+            setTimeout(() => {
+              window.location.href = userData.role === 'admin' ? './admin.html' : './dashboard.html';
+            }, 1000);
+          } else {
+            showToast('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+              window.location.href = './dashboard.html';
+            }, 1000);
+          }
+        })
+        .catch(() => {
+          showToast('Login successful! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = './dashboard.html';
+          }, 1000);
+        });
+      }
+    })();
+    
+    // Forgot Password functionality
+    const forgotModal = document.getElementById('forgotPasswordModal');
+    const forgotLink = document.querySelector('.forgot-link');
+    const closeForgotModal = document.getElementById('closeForgotModal');
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    const resetSuccess = document.getElementById('resetSuccess');
+    
+    // Open modal
+    forgotLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotModal.classList.add('active');
+      document.getElementById('resetEmail').focus();
+    });
+    
+    // Close modal
+    closeForgotModal.addEventListener('click', () => {
+      forgotModal.classList.remove('active');
+      // Reset form state
+      forgotPasswordForm.style.display = 'block';
+      resetSuccess.style.display = 'none';
+      forgotPasswordForm.reset();
+    });
+    
+    // Close on overlay click
+    forgotModal.addEventListener('click', (e) => {
+      if (e.target === forgotModal) {
+        forgotModal.classList.remove('active');
+        forgotPasswordForm.style.display = 'block';
+        resetSuccess.style.display = 'none';
+        forgotPasswordForm.reset();
+      }
+    });
+    
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && forgotModal.classList.contains('active')) {
+        forgotModal.classList.remove('active');
+        forgotPasswordForm.style.display = 'block';
+        resetSuccess.style.display = 'none';
+        forgotPasswordForm.reset();
+      }
+    });
+    
+    // Handle forgot password form submit
+    forgotPasswordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('resetEmail').value.trim().toLowerCase();
+      const submitBtn = forgotPasswordForm.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      
+      if (!email) {
+        showToast('Please enter your email address', 'error');
+        return;
+      }
+      
+      // Disable button and show loading
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+      
+      try {
+        const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+        const response = await fetch(`${apiUrl}/api/v1/auth/forgot-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: email })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Show success message
+          forgotPasswordForm.style.display = 'none';
+          resetSuccess.style.display = 'block';
+          
+          // For demo purposes, show the token and link
+          if (data.demo_token) {
+            console.log('🔑 Demo Reset Token:', data.demo_token);
+            console.log('🔗 Reset URL:', data.demo_reset_url);
+            
+            // Add a clickable link to the success message
+            const noteEl = resetSuccess.querySelector('.note');
+            if (noteEl) {
+              noteEl.innerHTML = `
+                <strong>Demo Mode:</strong> Click to reset your password:<br>
+                <a href="./reset-password.html?token=${data.demo_token}" style="color: var(--crimson); word-break: break-all;">
+                  Open Reset Password Page
+                </a>
+              `;
+            }
+          }
+          
+          showToast('Reset link sent! Check below for demo link.', 'success');
+        } else {
+          throw new Error(data.detail || 'Failed to send reset email');
+        }
+      } catch (error) {
+        showToast(error.message || 'Failed to send reset email. Please try again.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+    });
+  </script>
+  
+  <!-- Include required scripts -->
+  <script src="./js/config.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/auth.js"></script>
+</body>
+</html>
