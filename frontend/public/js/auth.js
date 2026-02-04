@@ -58,12 +58,13 @@ async function handleLogin(event) {
     
     showToast('Login successful! Redirecting...', 'success');
     
-    // Check user role and redirect accordingly
+    // Check user role and redirect accordingly  
     const user = response.user || api.getUser();
     
+    // Add small delay to ensure token is stored
     setTimeout(() => {
       redirectBasedOnRole(user);
-    }, 1000);
+    }, 100);
     
   } catch (error) {
     console.error('Login error:', error);
