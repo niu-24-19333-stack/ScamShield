@@ -165,6 +165,18 @@ async def health():
     }
 
 
+@app.get("/api/honeypot-test")
+async def honeypot_test(api_key: str = Depends(verify_api_key)):
+    """Simple endpoint for honeypot tester validation"""
+    return {
+        "status": "success",
+        "message": "Honeypot API is accessible and authenticated",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "3.5.0",
+        "endpoint_type": "honeypot_message_handler"
+    }
+
+
 @app.get("/stats")
 async def stats(api_key: str = Depends(verify_api_key)):
     """session statistics - for debugging"""
