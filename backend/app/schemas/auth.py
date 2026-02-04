@@ -163,7 +163,7 @@ class GoogleAuthRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "code": "4/0AX4XfWj...",
-                "redirect_uri": "http://localhost:5500/login.html"
+                "redirect_uri": "https://scam-shield-1yzg-42nohqy3p-morbius-projects-43b3a6c9.vercel.app/login.html"
             }
         }
 
