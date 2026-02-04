@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login Debug</title>
+</head>
+<body>
+    <h1>Admin Login Debug Test</h1>
+    <button onclick="testAdminLogin()">Test Admin Login Flow</button>
+    <button onclick="checkStoredData()">Check Stored Data</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    <div id="output" style="margin-top: 20px; font-family: monospace; white-space: pre-wrap;"></div>
+
+    <script src="./js/config.js"></script>
+    <script src="./js/api.js"></script>
+    
+    <script>
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        async function testAdminLogin() {
+            document.getElementById('output').textContent = '';
+            log('🧪 Starting admin login test...');
+            
+            try {
+                // Test login
+                log('📡 Calling login API...');
+                const response = await api.login('raghavshivam4321@gmail.com', 'Thakur.4321');
+                log('✅ Login API successful');
+                log('👤 User: ' + response.user?.email);
+                log('👑 Role: ' + response.user?.role);
+                
+                // Check what's stored
+                log('\n📦 Checking localStorage...');
+                const token = localStorage.getItem('scamshield_access_token');
+                const userData = localStorage.getItem('scamshield_user');
+                
+                log('🔑 Token stored: ' + (token ? 'YES (length: ' + token.length + ')' : 'NO'));
+                log('👤 User data stored: ' + (userData ? 'YES' : 'NO'));
+                
+                if (userData) {
+                    try {
+                        const parsedUser = JSON.parse(userData);
+                        log('📋 Stored user email: ' + parsedUser.email);
+                        log('👑 Stored user role: ' + parsedUser.role);
+                        log('🔄 Role type: ' + typeof parsedUser.role);
+                        log('🔄 Role toLowerCase: ' + parsedUser.role?.toLowerCase());
+                    } catch (e) {
+                        log('❌ Error parsing user data: ' + e.message);
+                    }
+                }
+                
+                // Test redirect logic
+                log('\n🎯 Testing redirect logic...');
+                const user = response.user || api.getUser();
+                if (!user) {
+                    log('❌ No user data for redirect');
+                    return;
+                }
+                
+                const isAdmin = user && (user.role === 'admin' || user.role === 'ADMIN');
+                log('🔍 Admin check result: ' + isAdmin);
+                log('🔍 User role value: "' + user.role + '"');
+                log('🔍 User role type: ' + typeof user.role);
+                
+                if (isAdmin) {
+                    log('✅ Would redirect to admin panel');
+                } else {
+                    log('❌ Would redirect to regular dashboard');
+                }
+                
+            } catch (error) {
+                log('❌ Login failed: ' + error.message);
+            }
+        }
+
+        function checkStoredData() {
+            document.getElementById('output').textContent = '';
+            log('📦 Current localStorage data:');
+            
+            const token = localStorage.getItem('scamshield_access_token');
+            const user = localStorage.getItem('scamshield_user');
+            
+            log('🔑 Token: ' + (token ? 'EXISTS (length: ' + token.length + ')' : 'NOT FOUND'));
+            log('👤 User: ' + (user ? 'EXISTS' : 'NOT FOUND'));
+            
+            if (user) {
+                log('👤 Raw user data: ' + user);
+                try {
+                    const parsed = JSON.parse(user);
+                    log('📧 Email: ' + parsed.email);
+                    log('👑 Role: "' + parsed.role + '"');
+                    log('🔍 Role type: ' + typeof parsed.role);
+                } catch (e) {
+                    log('❌ Invalid JSON: ' + e.message);
+                }
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('scamshield_access_token');
+            localStorage.removeItem('scamshield_user');
+            log('🗑️ Storage cleared');
+        }
+    </script>
+</body>
+</html>

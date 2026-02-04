@@ -2391,7 +2391,10 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
-      checkAuth();
+      // Add a small delay to allow tokens from login redirect to be properly stored
+      setTimeout(() => {
+        checkAuth();
+      }, 100);
     });
 
     // Auth check
@@ -2407,7 +2410,9 @@
       // If no user data at all, redirect to login
       if (!userData) {
         console.log('❌ No user data found, redirecting to login');
-        window.location.href = './login.html';
+        setTimeout(() => {
+          window.location.href = './login.html';
+        }, 100);
         return;
       }
 
@@ -2466,7 +2471,9 @@
         // Clear invalid data and redirect to login
         localStorage.removeItem('scamshield_access_token');
         localStorage.removeItem('scamshield_user');
-        window.location.href = './login.html';
+        setTimeout(() => {
+          window.location.href = './login.html';
+        }, 100);
       }
     }
 
