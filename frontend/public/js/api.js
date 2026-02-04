@@ -112,12 +112,30 @@ class ApiService {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.detail || data.message || 'Request failed');
+        // Extract error message properly
+        let errorMessage = 'Request failed';
+        if (data.detail) {
+          errorMessage = data.detail;
+        } else if (data.message) {
+          errorMessage = data.message;
+        } else if (data.error) {
+          errorMessage = data.error;
+        }
+        throw new Error(errorMessage);
       }
       
       return data;
     } catch (error) {
       console.error('API Error:', error);
+      
+      // Better error handling for different error types
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Unable to connect to server. Please check your internet connection.');
+      }
+      if (error.name === 'SyntaxError') {
+        throw new Error('Server returned invalid response. Please try again.');
+      }
+      
       throw error;
     }
   }

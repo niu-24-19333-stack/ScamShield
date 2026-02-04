@@ -66,7 +66,22 @@ async function handleLogin(event) {
     }, 1000);
     
   } catch (error) {
-    showToast(error.message || 'Login failed. Please check your credentials.', 'error');
+    console.error('Login error:', error);
+    
+    // Extract error message properly
+    let errorMessage = 'Login failed. Please check your credentials.';
+    
+    if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error.message) {
+      errorMessage = error.message;
+    } else if (error.detail) {
+      errorMessage = error.detail;
+    } else if (error.error) {
+      errorMessage = error.error;
+    }
+    
+    showToast(errorMessage, 'error');
     
     // Reset button
     submitBtn.disabled = false;
