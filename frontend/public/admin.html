@@ -2294,7 +2294,7 @@
       
       try {
         // Verify token and get user info
-        const response = await fetch('http://localhost:8000/api/v1/users/me', {
+        const response = await fetch('https://scamshield-api-hocl.onrender.com/api/v1/users/me', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -2328,7 +2328,7 @@
     })();
     
     // Config
-    const API_BASE = 'http://localhost:8000/api/v1';
+    const API_BASE = 'https://scamshield-api-hocl.onrender.com/api/v1';
     let accessToken = localStorage.getItem('scamshield_access_token');
     let currentUser = null;
     let demoMode = false;
