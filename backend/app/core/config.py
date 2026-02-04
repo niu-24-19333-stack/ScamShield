@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "https://scam-shield-1yzg-42nohqy3p-morbius-projects-43b3a6c9.vercel.app"  # For OAuth redirects
     
     # API Authentication
-    API_SECRET_KEY: str = "change-me-in-production"
+    API_SECRET_KEY: str = "smsfg54sf8g4s85g4wr6smsf8g4s85g4wr6sms"
     
     # ============================================================
     # DATABASE (MongoDB)
