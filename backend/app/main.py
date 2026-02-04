@@ -92,17 +92,22 @@ app.add_middleware(
 # --- MongoDB Connection ---
 @app.on_event("startup")
 async def startup_db():
-    """Connect to MongoDB on startup"""
-    try:
-        from app.db.mongodb import connect_to_mongodb
-        from app.services.subscription_service import SubscriptionService
-        await connect_to_mongodb()
-        # Initialize default subscription plans
-        await SubscriptionService.initialize_default_plans()
-        print("[API] Database connected and initialized")
-    except Exception as e:
-        print(f"[API] Warning: Could not connect to MongoDB: {e}")
-        print("[API] Running without database - some features disabled")
+    """Connect to MongoDB on startup - non-blocking for fast API response"""
+    import asyncio
+    async def init_db():
+        try:
+            from app.db.mongodb import connect_to_mongodb
+            from app.services.subscription_service import SubscriptionService
+            await connect_to_mongodb()
+            await SubscriptionService.initialize_default_plans()
+            print("[API] Database connected and initialized")
+        except Exception as e:
+            print(f"[API] Warning: Could not connect to MongoDB: {e}")
+            print("[API] Running without database - some features disabled")
+    
+    # Start DB connection in background - don't block API startup
+    asyncio.create_task(init_db())
+    print("[API] Starting up... (DB connecting in background)")
 
 
 @app.on_event("shutdown")
@@ -158,22 +163,30 @@ async def root():
 async def health():
     """health check for uptime monitoring"""
     from app.ai_providers import ai
+    import os
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "ai_providers": ai.get_available_providers()
+        "ai_providers": ai.get_available_providers(),
+        "api_key_first_10": API_SECRET_KEY[:10] if API_SECRET_KEY else "not_set",
+        "api_key_length": len(API_SECRET_KEY) if API_SECRET_KEY else 0
     }
 
 
 @app.get("/api/honeypot-test")
-async def honeypot_test(api_key: str = Depends(verify_api_key)):
-    """Simple endpoint for honeypot tester validation"""
+async def honeypot_test(x_api_key: str = Header(..., alias="x-api-key")):
+    """Simple endpoint for honeypot tester validation - FAST response"""
+    # Quick validation without dependencies
+    if x_api_key != API_SECRET_KEY:
+        raise HTTPException(status_code=401, detail="invalid api key")
+    
     return {
         "status": "success",
         "message": "Honeypot API is accessible and authenticated",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "3.5.0",
-        "endpoint_type": "honeypot_message_handler"
+        "endpoint_type": "honeypot_message_handler",
+        "ready": True
     }
 
 
