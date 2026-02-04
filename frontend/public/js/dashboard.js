@@ -42,12 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initApp() {
+  console.log('🚀 Dashboard initializing...');
+  
   // Check auth - verify token with backend
   const token = localStorage.getItem('scamshield_access_token');
   const userData = localStorage.getItem('scamshield_user');
   
+  console.log('Token exists:', !!token);
+  console.log('User data exists:', !!userData);
+  
   if (!token) {
-    console.log('No token found, redirecting to login');
+    console.log('❌ No token found, redirecting to login');
     window.location.href = './login.html';
     return;
   }
@@ -56,15 +61,16 @@ async function initApp() {
   if (userData) {
     try {
       state.user = JSON.parse(userData);
+      console.log('✅ Using cached user data for:', state.user.email);
     } catch (e) {
-      console.error('Invalid cached user data');
+      console.error('❌ Invalid cached user data:', e);
     }
   }
   
   try {
     // Verify token and get updated user info
     const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
-    console.log('Verifying token with:', apiUrl);
+    console.log('🔍 Verifying token with:', apiUrl);
     
     const response = await fetch(`${apiUrl}/api/v1/users/me`, {
       headers: {
@@ -74,35 +80,33 @@ async function initApp() {
     });
     
     if (!response.ok) {
-      console.error('Token verification failed:', response.status, response.statusText);
-      throw new Error(`Token verification failed: ${response.status}`);
-    }
-    
-    const freshUserData = await response.json();
-    
-    // Store updated user data
-    localStorage.setItem('scamshield_user', JSON.stringify(freshUserData));
-    state.user = freshUserData;
-    console.log('Token verified successfully for user:', freshUserData.email);
-  
-  } catch (error) {
-    console.error('Auth check failed:', error);
-    
-    // If we have cached user data and it's a network error, continue with cached data
-    if (userData && (error.message.includes('fetch') || error.message.includes('network'))) {
-      console.log('Using cached user data due to network error');
-      try {
-        state.user = JSON.parse(userData);
-      } catch (e) {
-        // If cached data is invalid, clear and redirect
-        localStorage.removeItem('scamshield_access_token');
-        localStorage.removeItem('scamshield_refresh_token');
-        localStorage.removeItem('scamshield_user');
-        window.location.href = './login.html';
-        return;
+      console.error('❌ Token verification failed:', response.status, response.statusText);
+      
+      // If we have cached user data, try to continue with it
+      if (state.user && state.user.email) {
+        console.log('⚠️ Token verification failed, but using cached user data');
+      } else {
+        throw new Error(`Token verification failed: ${response.status}`);
       }
     } else {
+      const freshUserData = await response.json();
+      
+      // Store updated user data
+      localStorage.setItem('scamshield_user', JSON.stringify(freshUserData));
+      state.user = freshUserData;
+      console.log('✅ Token verified successfully for user:', freshUserData.email);
+    }
+  
+  } catch (error) {
+    console.error('❌ Auth check failed:', error);
+    
+    // If we have cached user data and it's a network error, continue with cached data
+    if (state.user && state.user.email && (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch'))) {
+      console.log('⚠️ Using cached user data due to network error');
+      // Continue with cached data
+    } else {
       // Clear invalid tokens and redirect
+      console.log('🔄 Clearing invalid session, redirecting to login');
       localStorage.removeItem('scamshield_access_token');
       localStorage.removeItem('scamshield_refresh_token');
       localStorage.removeItem('scamshield_user');
@@ -110,6 +114,18 @@ async function initApp() {
       return;
     }
   }
+  
+  // Ensure we have user data before continuing
+  if (!state.user || !state.user.email) {
+    console.log('❌ No valid user data available, redirecting to login');
+    localStorage.removeItem('scamshield_access_token');
+    localStorage.removeItem('scamshield_refresh_token');
+    localStorage.removeItem('scamshield_user');
+    window.location.href = './login.html';
+    return;
+  }
+  
+  console.log('✅ Dashboard authentication successful for:', state.user.email);
   
   // Load real scan history from backend
   await loadScanHistory();

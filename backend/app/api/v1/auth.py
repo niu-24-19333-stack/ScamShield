@@ -49,14 +49,17 @@ async def register(data: UserRegister):
         user, tokens = await AuthService.register_user(data)
         
         return {
-            "status": "success",
-            "message": "Account created successfully",
+            "status": "success", 
+            "message": "Account created successfully. You can now log in with your credentials.",
             "user": {
                 "id": str(user.id),
                 "email": user.email,
                 "full_name": user.full_name,
+                "role": user.role.value if hasattr(user.role, 'value') else str(user.role),
+                "is_verified": user.is_verified
             },
-            "tokens": tokens.model_dump()
+            "tokens": tokens.model_dump(),
+            "note": "Email verification is currently disabled. Your account is ready to use."
         }
     except ValueError as e:
         raise HTTPException(

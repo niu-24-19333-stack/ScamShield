@@ -19,8 +19,13 @@ const GOOGLE_CLIENT_ID = '1064706061315-euungp6jbuki8tfhbaec9evlot75fqsr.apps.go
  */
 function redirectBasedOnRole(user = null) {
   const userData = user || api.getUser();
+  console.log('Redirecting user:', userData);
+  
+  // Default to regular dashboard if no role or regular user
   const isAdmin = userData && userData.role === 'admin';
   const redirectUrl = isAdmin ? './admin.html' : './dashboard.html';
+  
+  console.log('Redirect URL:', redirectUrl);
   window.location.href = redirectUrl;
 }
 
@@ -153,10 +158,13 @@ async function handleSignup(event) {
     
     showToast('Account created successfully! Redirecting...', 'success');
     
-    // Redirect to dashboard
+    // Check user role and redirect accordingly
+    const user = response.user || api.getUser();
+    
+    // Add small delay to ensure token is stored
     setTimeout(() => {
-      window.location.href = './dashboard.html';
-    }, 1000);
+      redirectBasedOnRole(user);
+    }, 100);
     
   } catch (error) {
     showToast(error.message || 'Registration failed. Please try again.', 'error');
