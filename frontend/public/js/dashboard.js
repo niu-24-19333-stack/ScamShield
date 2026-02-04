@@ -82,7 +82,17 @@ async function initApp() {
     if (!response.ok) {
       console.error('❌ Token verification failed:', response.status, response.statusText);
       
-      // If we have cached user data, try to continue with it
+      // If it's a 401, token is invalid - clear and redirect
+      if (response.status === 401) {
+        console.log('🔄 Token invalid (401), clearing session and redirecting to login');
+        localStorage.removeItem('scamshield_access_token');
+        localStorage.removeItem('scamshield_refresh_token');
+        localStorage.removeItem('scamshield_user');
+        window.location.href = './login.html';
+        return;
+      }
+      
+      // For other errors (5xx, network), try to continue with cached data if available
       if (state.user && state.user.email) {
         console.log('⚠️ Token verification failed, but using cached user data');
       } else {
@@ -100,12 +110,28 @@ async function initApp() {
   } catch (error) {
     console.error('❌ Auth check failed:', error);
     
-    // If we have cached user data and it's a network error, continue with cached data
-    if (state.user && state.user.email && (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch'))) {
-      console.log('⚠️ Using cached user data due to network error');
-      // Continue with cached data
+    // If it's a CORS or network error and we have cached user data, try to continue
+    const isCorsError = error.message.includes('CORS') || 
+                       error.message.includes('fetch') || 
+                       error.message.includes('Failed to fetch') ||
+                       error.message.includes('NetworkError');
+    
+    if (isCorsError && state.user && state.user.email) {
+      console.log('⚠️ CORS/Network error detected, using cached user data');
+      console.log('🔧 This usually means Render.com FRONTEND_URL needs updating');
+      // Continue with cached data, but show a warning
+      const warningDiv = document.createElement('div');
+      warningDiv.style.cssText = `
+        position: fixed; top: 10px; right: 10px; z-index: 1000;
+        background: #ff6b35; color: white; padding: 12px; border-radius: 8px;
+        font-family: system-ui; font-size: 14px; max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      `;
+      warningDiv.innerHTML = '⚠️ Backend connection issues. Using offline mode.';
+      document.body.appendChild(warningDiv);
+      setTimeout(() => warningDiv.remove(), 5000);
     } else {
-      // Clear invalid tokens and redirect
+      // Clear invalid session and redirect
       console.log('🔄 Clearing invalid session, redirecting to login');
       localStorage.removeItem('scamshield_access_token');
       localStorage.removeItem('scamshield_refresh_token');

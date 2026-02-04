@@ -71,15 +71,28 @@ async function handleLogin(event) {
     // Call API
     const response = await api.login(email, password);
     
+    console.log('✅ Login API response received:', response.user?.email);
+    
+    // Verify tokens were stored properly
+    const storedToken = localStorage.getItem('scamshield_access_token');
+    const storedUser = localStorage.getItem('scamshield_user');
+    
+    if (!storedToken || !storedUser) {
+      console.error('❌ Token or user data not stored properly');
+      throw new Error('Authentication data not saved properly');
+    }
+    
+    console.log('✅ Authentication data stored successfully');
     showToast('Login successful! Redirecting...', 'success');
     
-    // Check user role and redirect accordingly  
+    // Get user data for role-based redirect
     const user = response.user || api.getUser();
+    console.log('🔄 Redirecting user with role:', user?.role);
     
-    // Add small delay to ensure token is stored
+    // Add delay to ensure all storage operations complete
     setTimeout(() => {
       redirectBasedOnRole(user);
-    }, 100);
+    }, 250);
     
   } catch (error) {
     console.error('Login error:', error);
@@ -166,15 +179,28 @@ async function handleSignup(event) {
     // Call API
     const response = await api.register(email, password, fullName, phone);
     
+    console.log('✅ Registration API response received:', response.user?.email);
+    
+    // Verify tokens were stored properly
+    const storedToken = localStorage.getItem('scamshield_access_token');
+    const storedUser = localStorage.getItem('scamshield_user');
+    
+    if (!storedToken || !storedUser) {
+      console.error('❌ Token or user data not stored properly during registration');
+      throw new Error('Registration completed but authentication data not saved');
+    }
+    
+    console.log('✅ Registration and authentication data stored successfully');
     showToast('Account created successfully! Redirecting...', 'success');
     
     // Check user role and redirect accordingly
     const user = response.user || api.getUser();
+    console.log('🔄 Redirecting new user with role:', user?.role);
     
-    // Add small delay to ensure token is stored
+    // Add delay to ensure all storage operations complete
     setTimeout(() => {
       redirectBasedOnRole(user);
-    }, 100);
+    }, 250);
     
   } catch (error) {
     showToast(error.message || 'Registration failed. Please try again.', 'error');

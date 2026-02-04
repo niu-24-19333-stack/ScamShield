@@ -130,10 +130,13 @@ class ApiService {
       
       // Better error handling for different error types
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error('Unable to connect to server. Please check your internet connection.');
+        throw new Error('Unable to connect to server. Please check your internet connection or try again later.');
       }
       if (error.name === 'SyntaxError') {
         throw new Error('Server returned invalid response. Please try again.');
+      }
+      if (error.message && error.message.includes('CORS')) {
+        throw new Error('Server configuration issue. Please contact support.');
       }
       
       throw error;
