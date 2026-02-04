@@ -19,14 +19,24 @@ const GOOGLE_CLIENT_ID = '1064706061315-euungp6jbuki8tfhbaec9evlot75fqsr.apps.go
  */
 function redirectBasedOnRole(user = null) {
   const userData = user || api.getUser();
-  console.log('Redirecting user:', userData);
+  console.log('🎯 Redirecting user based on role:', userData);
   
-  // Default to regular dashboard if no role or regular user
-  const isAdmin = userData && userData.role === 'admin';
-  const redirectUrl = isAdmin ? './admin.html' : './dashboard.html';
+  if (!userData) {
+    console.log('❌ No user data available, redirecting to login');
+    window.location.href = './login.html';
+    return;
+  }
   
-  console.log('Redirect URL:', redirectUrl);
-  window.location.href = redirectUrl;
+  // Check if user has admin role
+  const isAdmin = userData && (userData.role === 'admin' || userData.role === 'ADMIN');
+  
+  if (isAdmin) {
+    console.log('👑 Admin user detected, redirecting to admin panel');
+    window.location.href = './admin.html';
+  } else {
+    console.log('👤 Regular user detected, redirecting to dashboard');
+    window.location.href = './dashboard.html';
+  }
 }
 
 /**

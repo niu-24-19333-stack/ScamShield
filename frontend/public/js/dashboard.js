@@ -125,6 +125,14 @@ async function initApp() {
     return;
   }
   
+  // Check if user is admin - if so, redirect to admin panel
+  const userRole = state.user.role?.toLowerCase();
+  if (userRole === 'admin') {
+    console.log('👑 Admin user detected on regular dashboard, redirecting to admin panel');
+    window.location.href = './admin.html';
+    return;
+  }
+  
   console.log('✅ Dashboard authentication successful for:', state.user.email);
   
   // Load real scan history from backend
