@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0A0A0A; color: #F5F2EB; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 10px; background: #8B0000; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #1a1a1a; border-radius: 3px; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Admin Login Flow Test</h1>
+    
+    <div class="test-section">
+        <h2>Step 1: Test Backend Login</h2>
+        <button onclick="testBackendLogin()">Test Backend Login</button>
+        <div id="backend-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 2: Test Admin Login & Redirect</h2>
+        <button onclick="testAdminLogin()">Login as Admin</button>
+        <div id="admin-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 3: Check Current Token</h2>
+        <button onclick="checkCurrentToken()">Check Token</button>
+        <div id="token-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Quick Actions</h2>
+        <button onclick="clearStorage()">Clear Storage</button>
+        <button onclick="goToAdmin()">Go to Admin Panel</button>
+        <button onclick="goToLogin()">Go to Login</button>
+    </div>
+
+    <script>
+        const API_BASE = 'https://scamshield-api-hocl.onrender.com/api/v1';
+        
+        async function testBackendLogin() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({
+                        email: 'raghavshivam4321@gmail.com',
+                        password: 'Thakur.4321'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<span class="success">✅ Backend login successful!</span><br>
+                        User: ${data.user.email}<br>
+                        Role: ${data.user.role}<br>
+                        Token: ${data.tokens.access_token.substring(0, 50)}...`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ Backend login failed: ${data.detail}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('admin-result');
+            resultDiv.innerHTML = 'Logging in...';
+            
+            try {
+                // Login and store tokens
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({
+                        email: 'raghavshivam4321@gmail.com',
+                        password: 'Thakur.4321'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store tokens like the real app does
+                    localStorage.setItem('scamshield_access_token', data.tokens.access_token);
+                    localStorage.setItem('scamshield_refresh_token', data.tokens.refresh_token);
+                    localStorage.setItem('scamshield_user', JSON.stringify(data.user));
+                    
+                    resultDiv.innerHTML = `<span class="success">✅ Login successful and tokens stored!</span><br>
+                        Ready to access admin panel.<br>
+                        <button onclick="goToAdmin()" style="margin-top: 10px;">Go to Admin Panel</button>`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ Login failed: ${data.detail}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        function checkCurrentToken() {
+            const resultDiv = document.getElementById('token-result');
+            const token = localStorage.getItem('scamshield_access_token');
+            const user = localStorage.getItem('scamshield_user');
+            
+            if (token) {
+                const userData = user ? JSON.parse(user) : null;
+                resultDiv.innerHTML = `<span class="success">✅ Token exists!</span><br>
+                    Token: ${token.substring(0, 50)}...<br>
+                    User: ${userData ? userData.email + ' (' + userData.role + ')' : 'No user data'}`;
+            } else {
+                resultDiv.innerHTML = `<span class="error">❌ No token found</span>`;
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('scamshield_access_token');
+            localStorage.removeItem('scamshield_refresh_token');
+            localStorage.removeItem('scamshield_user');
+            alert('Storage cleared!');
+            checkCurrentToken();
+        }
+        
+        function goToAdmin() {
+            window.location.href = './admin.html';
+        }
+        
+        function goToLogin() {
+            window.location.href = './login.html';
+        }
+        
+        // Auto-check token on load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkCurrentToken();
+        });
+    </script>
+</body>
+</html>
