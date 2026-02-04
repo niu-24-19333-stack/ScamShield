@@ -4,7 +4,7 @@ config.py - Centralized configuration using Pydantic Settings
 Loads all settings from environment variables with defaults.
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings  # type: ignore
 from typing import Optional, List
 from functools import lru_cache
 

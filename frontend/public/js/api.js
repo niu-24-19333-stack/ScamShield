@@ -50,6 +50,12 @@ class ApiService {
     if (refreshToken) {
       localStorage.setItem(API_CONFIG.REFRESH_TOKEN_KEY, refreshToken);
     }
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userRole');
+    
+    // Clear session storage as well
+    sessionStorage.clear();
   }
   
   clearTokens() {

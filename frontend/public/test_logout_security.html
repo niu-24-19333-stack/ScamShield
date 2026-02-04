@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logout Security Test - ScamShield</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0a0a0a;
+      color: #f5f2eb;
+    }
+    h1 {
+      color: #C41E3A;
+      border-bottom: 2px solid #222;
+      padding-bottom: 10px;
+    }
+    .test-section {
+      background: #111;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 1px solid #222;
+    }
+    .test-step {
+      padding: 15px;
+      margin: 10px 0;
+      background: #1a1a1a;
+      border-left: 4px solid #C41E3A;
+      border-radius: 4px;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .status.pass {
+      background: #22c55e;
+      color: white;
+    }
+    .status.fail {
+      background: #ef4444;
+      color: white;
+    }
+    .status.pending {
+      background: #f59e0b;
+      color: white;
+    }
+    button {
+      background: #C41E3A;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    button:hover {
+      background: #a01829;
+    }
+    .info {
+      background: #1e3a8a;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    code {
+      background: #000;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      color: #22c55e;
+    }
+    .token-status {
+      padding: 10px;
+      margin: 10px 0;
+      background: #000;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔒 Logout Security Test Suite</h1>
+  
+  <div class="info">
+    <strong>📋 Purpose:</strong> यह page logout security को test करने के लिए है। 
+    सभी tests को順序 में follow करें।
+  </div>
+
+  <div class="test-section">
+    <h2>Pre-requisites Check</h2>
+    <div class="test-step">
+      <strong>1. Backend Status:</strong>
+      <span class="status pending" id="backend-status">Checking...</span>
+      <div id="backend-info"></div>
+    </div>
+    <div class="test-step">
+      <strong>2. Current Auth Status:</strong>
+      <span class="status" id="auth-status">Checking...</span>
+      <div class="token-status" id="token-info">Loading...</div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 1: Normal Login/Logout Flow</h2>
+    <div class="test-step">
+      <strong>Step 1:</strong> Login to dashboard
+      <br><button onclick="openLogin()">Open Login Page</button>
+    </div>
+    <div class="test-step">
+      <strong>Step 2:</strong> After login, click logout
+      <br><small style="color: #888;">Observe the redirect behavior</small>
+    </div>
+    <div class="test-step">
+      <strong>Step 3:</strong> Press browser BACK button
+      <br><button onclick="testBackButton()">Simulate Back Button</button>
+      <br><strong style="color: #22c55e;">Expected:</strong> Should NOT access dashboard
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Token Deletion</h2>
+    <div class="test-step">
+      <strong>Step 1:</strong> Clear access token manually
+      <br><button onclick="clearToken()">Clear Token</button>
+    </div>
+    <div class="test-step">
+      <strong>Step 2:</strong> Try to access dashboard
+      <br><button onclick="accessDashboard()">Access Dashboard</button>
+      <br><strong style="color: #22c55e;">Expected:</strong> Should redirect to login
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Direct URL Access</h2>
+    <div class="test-step">
+      <strong>Step 1:</strong> Ensure you're logged out
+      <br><button onclick="forceLogout()">Force Logout</button>
+    </div>
+    <div class="test-step">
+      <strong>Step 2:</strong> Try accessing dashboard URL directly
+      <br><button onclick="directAccess()">Direct Dashboard Access</button>
+      <br><strong style="color: #22c55e;">Expected:</strong> Immediate redirect to login
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Cache Prevention</h2>
+    <div class="test-step">
+      <strong>Check cache headers on dashboard:</strong>
+      <br><button onclick="checkCache()">Check Cache Headers</button>
+      <div id="cache-result" style="margin-top: 10px;"></div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 5: Multi-Tab Sync</h2>
+    <div class="test-step">
+      <strong>Step 1:</strong> Open dashboard in new tab
+      <br><button onclick="openDashboardNewTab()">Open in New Tab</button>
+    </div>
+    <div class="test-step">
+      <strong>Step 2:</strong> Logout from this tab
+      <br><button onclick="logoutHere()">Logout Here</button>
+    </div>
+    <div class="test-step">
+      <strong>Step 3:</strong> Switch back to dashboard tab
+      <br><strong style="color: #22c55e;">Expected:</strong> Auto-redirect on visibility change
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test Results Summary</h2>
+    <div id="test-results">
+      <p style="color: #888;">Run the tests above to see results...</p>
+    </div>
+  </div>
+
+  <script>
+    // Check initial status
+    window.addEventListener('DOMContentLoaded', checkStatus);
+
+    async function checkStatus() {
+      // Check backend
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/health');
+        if (response.ok) {
+          document.getElementById('backend-status').className = 'status pass';
+          document.getElementById('backend-status').textContent = 'Online';
+          document.getElementById('backend-info').innerHTML = 
+            '<small style="color: #22c55e;">✓ Backend is running</small>';
+        } else {
+          throw new Error('Backend not responding');
+        }
+      } catch (e) {
+        document.getElementById('backend-status').className = 'status fail';
+        document.getElementById('backend-status').textContent = 'Offline';
+        document.getElementById('backend-info').innerHTML = 
+          '<small style="color: #ef4444;">✗ Backend is not running. Start with: cd backend && python -m uvicorn app.main:app --reload</small>';
+      }
+
+      // Check auth status
+      const token = localStorage.getItem('scamshield_access_token');
+      const authStatusEl = document.getElementById('auth-status');
+      const tokenInfoEl = document.getElementById('token-info');
+      
+      if (token) {
+        authStatusEl.className = 'status pass';
+        authStatusEl.textContent = 'Authenticated';
+        tokenInfoEl.innerHTML = `
+          ✓ Token found: ${token.substring(0, 20)}...<br>
+          ✓ User: ${localStorage.getItem('userName') || 'Unknown'}<br>
+          ✓ Email: ${localStorage.getItem('userEmail') || 'Unknown'}
+        `;
+      } else {
+        authStatusEl.className = 'status fail';
+        authStatusEl.textContent = 'Not Authenticated';
+        tokenInfoEl.innerHTML = '✗ No access token found';
+      }
+    }
+
+    function openLogin() {
+      window.open('./login.html', '_blank');
+    }
+
+    function testBackButton() {
+      alert('This will be tested manually. After logout, press your browser back button.');
+    }
+
+    function clearToken() {
+      localStorage.removeItem('scamshield_access_token');
+      alert('Access token cleared! Now try accessing dashboard.');
+      checkStatus();
+    }
+
+    function accessDashboard() {
+      window.location.href = './dashboard.html';
+    }
+
+    function forceLogout() {
+      localStorage.removeItem('scamshield_access_token');
+      localStorage.removeItem('scamshield_refresh_token');
+      localStorage.removeItem('scamshield_user');
+      localStorage.removeItem('isLoggedIn');
+      sessionStorage.clear();
+      alert('Logged out! Now try direct access.');
+      checkStatus();
+    }
+
+    function directAccess() {
+      window.open('./dashboard.html', '_blank');
+    }
+
+    async function checkCache() {
+      const resultEl = document.getElementById('cache-result');
+      try {
+        const response = await fetch('./dashboard.html', { method: 'HEAD' });
+        const cacheControl = response.headers.get('Cache-Control');
+        const pragma = response.headers.get('Pragma');
+        const expires = response.headers.get('Expires');
+        
+        resultEl.innerHTML = `
+          <div style="color: #22c55e;">
+            Cache-Control: ${cacheControl || 'Not set'}<br>
+            Pragma: ${pragma || 'Not set'}<br>
+            Expires: ${expires || 'Not set'}
+          </div>
+          <small style="color: #888;">Note: Meta tags are checked on page load</small>
+        `;
+      } catch (e) {
+        resultEl.innerHTML = `<div style="color: #ef4444;">Error: ${e.message}</div>`;
+      }
+    }
+
+    function openDashboardNewTab() {
+      window.open('./dashboard.html', '_blank');
+      alert('Dashboard opened in new tab. Now logout from this page and check the other tab.');
+    }
+
+    function logoutHere() {
+      localStorage.removeItem('scamshield_access_token');
+      localStorage.removeItem('scamshield_refresh_token');
+      localStorage.removeItem('scamshield_user');
+      localStorage.removeItem('isLoggedIn');
+      sessionStorage.clear();
+      alert('Logged out from this tab! Switch to dashboard tab to see auto-redirect.');
+      checkStatus();
+    }
+
+    // Listen for storage changes (multi-tab sync)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'scamshield_access_token') {
+        checkStatus();
+      }
+    });
+  </script>
+</body>
+</html>

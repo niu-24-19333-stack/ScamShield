@@ -41,38 +41,51 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
 });
 
+// Prevent cached page access after logout
+window.addEventListener('pageshow', (event) => {
+  // If page is loaded from cache, re-check authentication
+  if (event.persisted) {
+    const token = localStorage.getItem('scamshield_access_token');
+    if (!token) {
+      window.location.replace('./login.html');
+    }
+  }
+});
+
+// Re-verify auth when page becomes visible (e.g., after using back button)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    const token = localStorage.getItem('scamshield_access_token');
+    if (!token) {
+      window.location.replace('./login.html');
+    }
+  }
+});
+
 async function initApp() {
-  console.log('🚀 Dashboard initializing...');
-  
-  // Check auth - verify token with backend
+  // Immediate auth check
   const token = localStorage.getItem('scamshield_access_token');
-  const userData = localStorage.getItem('scamshield_user');
-  
-  console.log('Token exists:', !!token);
-  console.log('User data exists:', !!userData);
   
   if (!token) {
-    console.log('❌ No token found, redirecting to login');
-    window.location.href = './login.html';
+    window.location.replace('./login.html');
     return;
   }
   
-  // If we have cached user data, use it first
-  if (userData) {
-    try {
-      state.user = JSON.parse(userData);
-      console.log('✅ Using cached user data for:', state.user.email);
-    } catch (e) {
-      console.error('❌ Invalid cached user data:', e);
-    }
+  // Prevent browser caching of this page
+  if (window.history && window.history.pushState) {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function() {
+      // Re-check auth on back button
+      const currentToken = localStorage.getItem('scamshield_access_token');
+      if (!currentToken) {
+        window.location.replace('./login.html');
+      }
+    };
   }
   
   try {
-    // Verify token and get updated user info
-    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
-    console.log('🔍 Verifying token with:', apiUrl);
-    
-    const response = await fetch(`${apiUrl}/api/v1/users/me`, {
+    // Verify token and get user info
+    const response = await fetch('http://localhost:8000/api/v1/users/me', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -80,86 +93,24 @@ async function initApp() {
     });
     
     if (!response.ok) {
-      console.error('❌ Token verification failed:', response.status, response.statusText);
-      
-      // If it's a 401, token is invalid - clear and redirect
-      if (response.status === 401) {
-        console.log('🔄 Token invalid (401), clearing session and redirecting to login');
-        localStorage.removeItem('scamshield_access_token');
-        localStorage.removeItem('scamshield_refresh_token');
-        localStorage.removeItem('scamshield_user');
-        window.location.href = './login.html';
-        return;
-      }
-      
-      // For other errors (5xx, network), try to continue with cached data if available
-      if (state.user && state.user.email) {
-        console.log('⚠️ Token verification failed, but using cached user data');
-      } else {
-        throw new Error(`Token verification failed: ${response.status}`);
-      }
-    } else {
-      const freshUserData = await response.json();
-      
-      // Store updated user data
-      localStorage.setItem('scamshield_user', JSON.stringify(freshUserData));
-      state.user = freshUserData;
-      console.log('✅ Token verified successfully for user:', freshUserData.email);
+      throw new Error('Invalid token');
     }
+    
+    const userData = await response.json();
+    
+    // Store updated user data
+    localStorage.setItem('scamshield_user', JSON.stringify(userData));
+    state.user = userData;
   
   } catch (error) {
-    console.error('❌ Auth check failed:', error);
-    
-    // If it's a CORS or network error and we have cached user data, try to continue
-    const isCorsError = error.message.includes('CORS') || 
-                       error.message.includes('fetch') || 
-                       error.message.includes('Failed to fetch') ||
-                       error.message.includes('NetworkError');
-    
-    if (isCorsError && state.user && state.user.email) {
-      console.log('⚠️ CORS/Network error detected, using cached user data');
-      console.log('🔧 This usually means Render.com FRONTEND_URL needs updating');
-      // Continue with cached data, but show a warning
-      const warningDiv = document.createElement('div');
-      warningDiv.style.cssText = `
-        position: fixed; top: 10px; right: 10px; z-index: 1000;
-        background: #ff6b35; color: white; padding: 12px; border-radius: 8px;
-        font-family: system-ui; font-size: 14px; max-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      `;
-      warningDiv.innerHTML = '⚠️ Backend connection issues. Using offline mode.';
-      document.body.appendChild(warningDiv);
-      setTimeout(() => warningDiv.remove(), 5000);
-    } else {
-      // Clear invalid session and redirect
-      console.log('🔄 Clearing invalid session, redirecting to login');
-      localStorage.removeItem('scamshield_access_token');
-      localStorage.removeItem('scamshield_refresh_token');
-      localStorage.removeItem('scamshield_user');
-      window.location.href = './login.html';
-      return;
-    }
-  }
-  
-  // Ensure we have user data before continuing
-  if (!state.user || !state.user.email) {
-    console.log('❌ No valid user data available, redirecting to login');
+    console.error('Auth check failed:', error);
     localStorage.removeItem('scamshield_access_token');
     localStorage.removeItem('scamshield_refresh_token');
     localStorage.removeItem('scamshield_user');
-    window.location.href = './login.html';
+    localStorage.removeItem('isLoggedIn');
+    window.location.replace('./login.html');
     return;
   }
-  
-  // Check if user is admin - if so, redirect to admin panel
-  const userRole = state.user.role?.toLowerCase();
-  if (userRole === 'admin') {
-    console.log('👑 Admin user detected on regular dashboard, redirecting to admin panel');
-    window.location.href = './admin.html';
-    return;
-  }
-  
-  console.log('✅ Dashboard authentication successful for:', state.user.email);
   
   // Load real scan history from backend
   await loadScanHistory();
@@ -200,8 +151,7 @@ async function loadScanHistory() {
   const token = localStorage.getItem('scamshield_access_token');
   
   try {
-    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
-    const response = await fetch(`${apiUrl}/api/v1/scans/history?limit=50`, {
+    const response = await fetch('http://localhost:8000/api/v1/scans/history?limit=50', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -236,8 +186,7 @@ async function loadUserStats() {
   const token = localStorage.getItem('scamshield_access_token');
   
   try {
-    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
-    const response = await fetch(`${apiUrl}/api/v1/users/me/stats`, {
+    const response = await fetch('http://localhost:8000/api/v1/users/me/stats', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -527,8 +476,7 @@ async function startXrayScan() {
   let result;
   try {
     const token = localStorage.getItem('scamshield_access_token');
-    const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
-    const response = await fetch(`${apiUrl}/api/v1/scans/`, {
+    const response = await fetch('http://localhost:8000/api/v1/scans/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -794,16 +742,11 @@ function blockSender() {
 // ==========================================
 // API KEY MANAGEMENT
 // ==========================================
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
 let currentApiKey = null;
 let isApiKeyVisible = false;
 
 // Check for existing API key on load
-// API Keys functionality
-const API_BASE_URL = (() => {
-  const configUrl = window.SCAMSHIELD_CONFIG?.API_URL;
-  return configUrl ? `${configUrl}/api/v1` : 'https://scamshield-api-hocl.onrender.com/api/v1';
-})();
-
 async function checkExistingApiKey() {
   // Check localStorage first (for demo without backend)
   const storedKey = localStorage.getItem('scamshield_api_key');
@@ -1138,8 +1081,7 @@ async function saveSettings() {
   try {
     // Update profile
     if (token) {
-      const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
-      await fetch(`${apiUrl}/api/v1/users/me`, {
+      await fetch('http://localhost:8000/api/v1/users/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1149,7 +1091,7 @@ async function saveSettings() {
       });
       
       // Update settings
-      await fetch(`${apiUrl}/api/v1/users/me/settings`, {
+      await fetch('http://localhost:8000/api/v1/users/me/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1199,8 +1141,7 @@ async function loadSettings() {
   try {
     if (token) {
       // Load settings from backend
-      const apiUrl = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
-      const response = await fetch(`${apiUrl}/api/v1/users/me/settings`, {
+      const response = await fetch('http://localhost:8000/api/v1/users/me/settings', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -2038,97 +1979,3 @@ window.editKey = editKey;
 window.revokeKey = revokeKey;
 window.updateAnalytics = updateAnalytics;
 window.clearPlaygroundHistory = clearPlaygroundHistory;
-
-// ==========================================
-// CHANGE PASSWORD FUNCTIONS
-// ==========================================
-
-function openChangePasswordModal() {
-  const modal = document.getElementById('changePasswordModal');
-  if (modal) {
-    modal.style.display = 'flex';
-    // Clear form
-    document.getElementById('changePasswordForm').reset();
-  }
-}
-
-function closeChangePasswordModal() {
-  const modal = document.getElementById('changePasswordModal');
-  if (modal) {
-    modal.style.display = 'none';
-    document.getElementById('changePasswordForm').reset();
-  }
-}
-
-async function handleChangePassword(event) {
-  event.preventDefault();
-  
-  const currentPassword = document.getElementById('currentPassword').value;
-  const newPassword = document.getElementById('newPassword').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-  
-  // Validate passwords match
-  if (newPassword !== confirmPassword) {
-    showToast('New passwords do not match', 'error');
-    return;
-  }
-  
-  // Validate password length
-  if (newPassword.length < 8) {
-    showToast('Password must be at least 8 characters long', 'error');
-    return;
-  }
-  
-  // Validate not same as current
-  if (currentPassword === newPassword) {
-    showToast('New password must be different from current password', 'error');
-    return;
-  }
-  
-  try {
-    // Show loading state
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner"></span> Changing...';
-    
-    // Call API
-    const response = await api.post('/auth/change-password', {
-      current_password: currentPassword,
-      new_password: newPassword
-    });
-    
-    // Success
-    showToast('Password changed successfully! Please login again.', 'success');
-    closeChangePasswordModal();
-    
-    // Logout user after 2 seconds
-    setTimeout(() => {
-      api.logout();
-      window.location.href = './login.html';
-    }, 2000);
-    
-  } catch (error) {
-    console.error('Change password error:', error);
-    
-    // Extract error message
-    let errorMessage = 'Failed to change password';
-    if (error.response?.data?.detail) {
-      errorMessage = error.response.data.detail;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    showToast(errorMessage, 'error');
-    
-    // Re-enable button
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = 'Change Password';
-  }
-}
-
-// Make change password functions globally available
-window.openChangePasswordModal = openChangePasswordModal;
-window.closeChangePasswordModal = closeChangePasswordModal;
-window.handleChangePassword = handleChangePassword;

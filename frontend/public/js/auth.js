@@ -151,8 +151,16 @@ async function handleSignup(event) {
   }
   
   // Check for uppercase, lowercase, and digit
-  if (!/[A-Z]/.test(password)) {
-    showToast('Password must contain at least one uppercase letter', 'error');
+  // Clear browser cache and history
+  if (window.history && window.history.pushState) {
+    // Clear forward history
+    window.history.pushState(null, null, window.location.href);
+    window.history.replaceState(null, null, window.location.href);
+  }
+  
+  setTimeout(() => {
+    // Use replace to prevent back button navigation
+    window.location.replace('./login.html')east one uppercase letter', 'error');
     return;
   }
   

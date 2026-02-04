@@ -479,12 +479,23 @@ function getUserName() {
 }
 
 function logout() {
+  // Clear all auth-related localStorage items
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('userRole');
   localStorage.removeItem('userName');
   localStorage.removeItem('userEmail');
   localStorage.removeItem('scamshield_user');
-  window.location.href = 'index.html';
+  localStorage.removeItem('scamshield_access_token');
+  localStorage.removeItem('scamshield_refresh_token');
+  
+  // Clear browser cache and history
+  if (window.history && window.history.pushState) {
+    window.history.pushState(null, null, window.location.href);
+    window.history.replaceState(null, null, window.location.href);
+  }
+  
+  // Use replace to prevent back button navigation
+  window.location.replace('index.html');
 }
 
 // ============================================
