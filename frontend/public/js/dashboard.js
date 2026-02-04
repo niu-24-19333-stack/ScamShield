@@ -2038,3 +2038,97 @@ window.editKey = editKey;
 window.revokeKey = revokeKey;
 window.updateAnalytics = updateAnalytics;
 window.clearPlaygroundHistory = clearPlaygroundHistory;
+
+// ==========================================
+// CHANGE PASSWORD FUNCTIONS
+// ==========================================
+
+function openChangePasswordModal() {
+  const modal = document.getElementById('changePasswordModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    // Clear form
+    document.getElementById('changePasswordForm').reset();
+  }
+}
+
+function closeChangePasswordModal() {
+  const modal = document.getElementById('changePasswordModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.getElementById('changePasswordForm').reset();
+  }
+}
+
+async function handleChangePassword(event) {
+  event.preventDefault();
+  
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  
+  // Validate passwords match
+  if (newPassword !== confirmPassword) {
+    showToast('New passwords do not match', 'error');
+    return;
+  }
+  
+  // Validate password length
+  if (newPassword.length < 8) {
+    showToast('Password must be at least 8 characters long', 'error');
+    return;
+  }
+  
+  // Validate not same as current
+  if (currentPassword === newPassword) {
+    showToast('New password must be different from current password', 'error');
+    return;
+  }
+  
+  try {
+    // Show loading state
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> Changing...';
+    
+    // Call API
+    const response = await api.post('/auth/change-password', {
+      current_password: currentPassword,
+      new_password: newPassword
+    });
+    
+    // Success
+    showToast('Password changed successfully! Please login again.', 'success');
+    closeChangePasswordModal();
+    
+    // Logout user after 2 seconds
+    setTimeout(() => {
+      api.logout();
+      window.location.href = './login.html';
+    }, 2000);
+    
+  } catch (error) {
+    console.error('Change password error:', error);
+    
+    // Extract error message
+    let errorMessage = 'Failed to change password';
+    if (error.response?.data?.detail) {
+      errorMessage = error.response.data.detail;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    showToast(errorMessage, 'error');
+    
+    // Re-enable button
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Change Password';
+  }
+}
+
+// Make change password functions globally available
+window.openChangePasswordModal = openChangePasswordModal;
+window.closeChangePasswordModal = closeChangePasswordModal;
+window.handleChangePassword = handleChangePassword;
