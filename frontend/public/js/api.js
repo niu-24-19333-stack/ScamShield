@@ -33,6 +33,63 @@ const API_CONFIG = {
 class ApiService {
   constructor() {
     this.baseUrl = API_CONFIG.BASE_URL;
+    this.sessionTimeout = 30 * 60 * 1000; // 30 minutes
+    this.warningTime = 5 * 60 * 1000; // 5 minutes before timeout
+    this.sessionTimer = null;
+    this.warningTimer = null;
+    this.initSessionManagement();
+  }
+
+  // --- Session Management ---
+  
+  initSessionManagement() {
+    // Track user activity
+    const resetSession = () => this.resetSessionTimer();
+    
+    // Listen for user activity
+    ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(event => {
+      document.addEventListener(event, resetSession, { passive: true });
+    });
+    
+    // Start session timer if authenticated
+    if (this.isAuthenticated()) {
+      this.resetSessionTimer();
+    }
+  }
+  
+  resetSessionTimer() {
+    // Clear existing timers
+    if (this.sessionTimer) clearTimeout(this.sessionTimer);
+    if (this.warningTimer) clearTimeout(this.warningTimer);
+    
+    // Update last activity time
+    localStorage.setItem('last_activity', Date.now().toString());
+    
+    // Set warning timer (show warning 5 minutes before logout)
+    this.warningTimer = setTimeout(() => {
+      this.showSessionWarning();
+    }, this.sessionTimeout - this.warningTime);
+    
+    // Set logout timer
+    this.sessionTimer = setTimeout(() => {
+      this.handleSessionTimeout();
+    }, this.sessionTimeout);
+  }
+  
+  showSessionWarning() {
+    if (typeof showToast === 'function') {
+      showToast('Your session will expire in 5 minutes due to inactivity', 'warning');
+    }
+  }
+  
+  handleSessionTimeout() {
+    this.clearTokens();
+    if (typeof showToast === 'function') {
+      showToast('Session expired due to inactivity', 'error');
+    }
+    setTimeout(() => {
+      window.location.href = './login.html';
+    }, 1000);
   }
 
   // --- Token Management ---
@@ -56,6 +113,9 @@ class ApiService {
     
     // Clear session storage as well
     sessionStorage.clear();
+    
+    // Reset session timer when new tokens are set
+    this.resetSessionTimer();
   }
   
   clearTokens() {
@@ -210,6 +270,11 @@ class ApiService {
     } catch (e) {
       // Ignore errors on logout
     }
+    
+    // Clear session timers
+    if (this.sessionTimer) clearTimeout(this.sessionTimer);
+    if (this.warningTimer) clearTimeout(this.warningTimer);
+    
     this.clearTokens();
   }
   

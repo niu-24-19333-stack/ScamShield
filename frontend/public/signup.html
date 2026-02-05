@@ -92,6 +92,32 @@
       }
     }
     
+    /* Close button */
+    .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--border);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      color: var(--text-muted);
+      font-size: 20px;
+      z-index: 100;
+    }
+    
+    .close-btn:hover {
+      background: var(--crimson);
+      color: var(--white);
+      transform: rotate(90deg);
+    }
+    
     /* Signup card */
     .signup-card {
       position: relative;
@@ -559,6 +585,14 @@
   
   <!-- Signup Card -->
   <div class="signup-card">
+    <!-- Close button -->
+    <button class="close-btn" onclick="window.location.href='./index.html'" title="Back to Home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    
     <div class="logo">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24" stroke-width="2">

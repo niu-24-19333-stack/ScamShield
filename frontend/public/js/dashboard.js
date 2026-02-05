@@ -13,17 +13,6 @@ const state = {
   threats: []
 };
 
-// Mock Data
-const mockScans = [
-  { id: 1, content: "Congratulations! You've won $1,000,000 in our international lottery. Click here to claim...", source: 'Email', isThreat: true, threatType: 'lottery', risk: 95, timestamp: new Date(Date.now() - 300000) },
-  { id: 2, content: "Your Amazon account has been suspended. Verify your identity immediately...", source: 'Email', isThreat: true, threatType: 'phishing', risk: 98, timestamp: new Date(Date.now() - 900000) },
-  { id: 3, content: "Meeting reminder: Quarterly review tomorrow at 3pm", source: 'Email', isThreat: false, threatType: null, risk: 2, timestamp: new Date(Date.now() - 1800000) },
-  { id: 4, content: "Hello dear, I am Princess Amara from Nigeria. I have $5 million to share with you...", source: 'SMS', isThreat: true, threatType: 'romance', risk: 92, timestamp: new Date(Date.now() - 3600000) },
-  { id: 5, content: "Your Microsoft subscription has expired. Call this number immediately to renew...", source: 'Email', isThreat: true, threatType: 'tech', risk: 88, timestamp: new Date(Date.now() - 7200000) },
-  { id: 6, content: "Invoice #45678 attached for your recent order", source: 'Email', isThreat: false, threatType: null, risk: 5, timestamp: new Date(Date.now() - 10800000) },
-  { id: 7, content: "URGENT: Your bank account will be frozen. Update your information now...", source: 'SMS', isThreat: true, threatType: 'phishing', risk: 96, timestamp: new Date(Date.now() - 14400000) },
-];
-
 // Scam detection patterns
 const scamPatterns = {
   urgency: ['urgent', 'immediately', 'now', 'hurry', 'limited time', 'act fast', 'don\'t delay'],
