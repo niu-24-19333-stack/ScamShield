@@ -1,14 +1,10 @@
 {
   "buildCommand": "echo 'No build needed for static files'",
-  "outputDirectory": "frontend/public",
+  "outputDirectory": "public",
   "installCommand": "echo 'No dependencies to install'",
   "framework": null,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
+  "cleanUrls": true,
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/(.*)",

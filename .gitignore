@@ -134,3 +134,4 @@ ssl/*.crt
 # Project Documentation
 # ===========================================
 PS_2.pdf
+.vercel
