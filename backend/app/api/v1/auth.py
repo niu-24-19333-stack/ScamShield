@@ -148,16 +148,13 @@ async def forgot_password(data: PasswordReset):
     """
     token = await AuthService.request_password_reset(data.email)
     
-    # In production, send email with token
-    # For demo, we return the token so it can be tested
-    
     response = {
         "status": "success",
-        "message": "If the email exists, a password reset link has been sent"
+        "message": "If the email exists, a password reset link has been sent to your inbox"
     }
     
-    # Only include token in demo mode (for testing)
-    if token:
+    # Only include token in debug/demo mode (for testing)
+    if token and settings.DEBUG:
         response["demo_token"] = token
         response["demo_reset_url"] = f"/reset-password.html?token={token}"
     

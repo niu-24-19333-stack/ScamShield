@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Log In — ScamShield Pro</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./css/responsive.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
     
@@ -87,32 +86,6 @@
       50% { transform: translate(30px, -30px) scale(1.1); }
     }
     
-    /* Close button */
-    .close-btn {
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--border);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      color: var(--text-muted);
-      font-size: 20px;
-      z-index: 100;
-    }
-    
-    .close-btn:hover {
-      background: var(--crimson);
-      color: var(--white);
-      transform: rotate(90deg);
-    }
-    
     /* Login card */
     .login-card {
       position: relative;
@@ -125,6 +98,39 @@
       box-shadow: 
         0 0 0 1px rgba(0,0,0,0.05),
         0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    
+    /* Close button */
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: var(--cream);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 100;
+    }
+    
+    .close-btn:hover {
+      background: var(--border);
+      transform: scale(1.05);
+    }
+    
+    .close-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-muted);
+    }
+    
+    .close-btn:hover svg {
+      stroke: var(--ink);
     }
     
     /* Logo */
@@ -452,14 +458,13 @@
   
   <!-- Login Card -->
   <div class="login-card">
-    <!-- Close button -->
-    <button class="close-btn" onclick="window.location.href='./index.html'" title="Back to Home">
+    <!-- Close button to go back to home -->
+    <a href="./index.html" class="close-btn" title="Back to Home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="18" y1="6" x2="6" y2="18"/>
         <line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
-    </button>
-    
+    </a>
     <div class="logo">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24" stroke-width="2">
@@ -960,7 +965,7 @@
           forgotPasswordForm.style.display = 'none';
           resetSuccess.style.display = 'block';
           
-          // For demo purposes, show the token and link
+          // Check if demo mode (token returned for testing)
           if (data.demo_token) {
             console.log('🔑 Demo Reset Token:', data.demo_token);
             console.log('🔗 Reset URL:', data.demo_reset_url);
@@ -975,9 +980,15 @@
                 </a>
               `;
             }
+            showToast('Reset link sent! Check below for demo link.', 'success');
+          } else {
+            // Production mode - email was sent
+            const noteEl = resetSuccess.querySelector('.note');
+            if (noteEl) {
+              noteEl.innerHTML = `Check your inbox for the password reset link. It may take a few minutes to arrive.`;
+            }
+            showToast('Reset link sent to your email!', 'success');
           }
-          
-          showToast('Reset link sent! Check below for demo link.', 'success');
         } else {
           throw new Error(data.detail || 'Failed to send reset email');
         }
@@ -994,6 +1005,5 @@
   <script src="./js/config.js"></script>
   <script src="./js/api.js"></script>
   <script src="./js/auth.js"></script>
-  <script src="./js/mobile.js"></script>
 </body>
 </html>

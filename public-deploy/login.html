@@ -965,7 +965,7 @@
           forgotPasswordForm.style.display = 'none';
           resetSuccess.style.display = 'block';
           
-          // For demo purposes, show the token and link
+          // Check if demo mode (token returned for testing)
           if (data.demo_token) {
             console.log('🔑 Demo Reset Token:', data.demo_token);
             console.log('🔗 Reset URL:', data.demo_reset_url);
@@ -980,9 +980,15 @@
                 </a>
               `;
             }
+            showToast('Reset link sent! Check below for demo link.', 'success');
+          } else {
+            // Production mode - email was sent
+            const noteEl = resetSuccess.querySelector('.note');
+            if (noteEl) {
+              noteEl.innerHTML = `Check your inbox for the password reset link. It may take a few minutes to arrive.`;
+            }
+            showToast('Reset link sent to your email!', 'success');
           }
-          
-          showToast('Reset link sent! Check below for demo link.', 'success');
         } else {
           throw new Error(data.detail || 'Failed to send reset email');
         }

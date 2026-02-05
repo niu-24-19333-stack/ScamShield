@@ -4,6 +4,7 @@ auth_service.py - Authentication business logic
 
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
+import logging
 
 from app.db.models.user import User, UserRole
 from app.db.models.user_settings import UserSettings
@@ -21,6 +22,9 @@ from app.core.security import (
 )
 from app.core.config import settings
 from app.schemas.auth import UserRegister, UserLogin, Token
+from app.services.email_service import EmailService
+
+logger = logging.getLogger(__name__)
 
 
 class AuthService:
@@ -153,7 +157,7 @@ class AuthService:
     @staticmethod
     async def request_password_reset(email: str) -> Optional[str]:
         """
-        Request password reset.
+        Request password reset and send email.
         
         Returns:
             Reset token if user exists, None otherwise
@@ -169,8 +173,18 @@ class AuthService:
         user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
         await user.save()
         
-        # In production, send email here
-        # For now, return token (for testing)
+        # Send password reset email
+        email_sent = EmailService.send_password_reset_email(
+            to_email=user.email,
+            reset_token=reset_token,
+            user_name=user.full_name
+        )
+        
+        if email_sent:
+            logger.info(f"Password reset email sent to {user.email}")
+        else:
+            logger.warning(f"Failed to send password reset email to {user.email}")
+        
         return reset_token
     
     @staticmethod
