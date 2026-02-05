@@ -20,7 +20,7 @@ from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 
 from app.config import API_SECRET_KEY
@@ -51,7 +51,7 @@ emotional_states: dict = {}
 class Message(BaseModel):
     sender: str
     text: str
-    timestamp: Optional[str] = None
+    timestamp: Optional[Union[str, int]] = None
 
 class Metadata(BaseModel):
     channel: Optional[str] = "SMS"
