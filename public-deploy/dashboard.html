@@ -7,6 +7,7 @@
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/responsive.css">
 </head>
 <body class="dashboard-body">
   
@@ -144,6 +145,18 @@
         </div>
       </div>
     </aside>
+    
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+    
+    <!-- Mobile Sidebar Toggle Button -->
+    <button class="mobile-sidebar-toggle" id="mobileSidebarToggle" onclick="toggleMobileSidebar()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
     
     <!-- Main Content -->
     <main class="dashboard-main">
@@ -2183,6 +2196,66 @@ async function batchScan(messages) {
   <script src="./js/config.js"></script>
   <script src="./js/api.js"></script>
   <script src="./js/main.js"></script>
+  
+  <!-- Mobile Sidebar Toggle Script -->
+  <script>
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const toggle = document.getElementById('mobileSidebarToggle');
+      
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        // Change toggle button icon
+        if (toggle) {
+          if (sidebar.classList.contains('active')) {
+            toggle.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            `;
+          } else {
+            toggle.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            `;
+          }
+        }
+        
+        // Prevent body scroll when sidebar is open
+        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+      }
+    }
+    
+    // Close sidebar when clicking a link (mobile)
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 1024) {
+          toggleMobileSidebar();
+        }
+      });
+    });
+    
+    // Close sidebar on window resize if larger than mobile
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1024) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar && overlay) {
+          sidebar.classList.remove('active');
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      }
+    });
+  </script>
+  
   <script src="./js/dashboard.js"></script>
 </body>
 </html>

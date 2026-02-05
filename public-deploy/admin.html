@@ -7,6 +7,7 @@
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/pages.css">
+  <link rel="stylesheet" href="./css/responsive.css">
   <style>
     /* Admin Panel Specific Styles */
     :root {
@@ -999,19 +1000,122 @@
     @media (max-width: 768px) {
       .admin-sidebar {
         transform: translateX(-100%);
-        transition: transform 0.3s;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 280px;
+        z-index: 1001;
       }
-      .admin-sidebar.open {
+      .admin-sidebar.active {
         transform: translateX(0);
+        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
       }
       .admin-main {
         margin-left: 0;
+        padding: 16px;
+      }
+      .admin-header {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 16px;
+      }
+      .admin-header h1 {
+        font-size: 1.25rem;
       }
       .stats-grid {
         grid-template-columns: 1fr;
       }
       .grid-2 {
         grid-template-columns: 1fr;
+      }
+      
+      /* Mobile sidebar overlay */
+      .admin-sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .admin-sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+      }
+      
+      /* Mobile toggle button */
+      .mobile-admin-toggle {
+        display: flex;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--admin-accent), #8B0000);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(196, 30, 58, 0.5);
+        z-index: 999;
+        cursor: pointer;
+        animation: mobilePulse 2s infinite;
+      }
+      .mobile-admin-toggle svg {
+        width: 24px;
+        height: 24px;
+      }
+      
+      @keyframes mobilePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      /* Table responsive */
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        min-width: 600px;
+      }
+      
+      /* Modal responsive */
+      .modal {
+        width: 95%;
+        max-width: none;
+        margin: 16px;
+        padding: 20px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .admin-header h1 {
+        font-size: 1.1rem;
+      }
+      .stat-card {
+        padding: 16px;
+      }
+      .stat-card h3 {
+        font-size: 1.5rem;
+      }
+      .mobile-admin-toggle {
+        width: 48px;
+        height: 48px;
+        bottom: 16px;
+        right: 16px;
+      }
+      .admin-sidebar {
+        width: 260px;
+      }
+    }
+    
+    /* Hide mobile toggle on desktop */
+    @media (min-width: 769px) {
+      .mobile-admin-toggle,
+      .admin-sidebar-overlay {
+        display: none !important;
       }
     }
   </style>
@@ -1121,6 +1225,18 @@
         </div>
       </div>
     </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="admin-sidebar-overlay" id="adminSidebarOverlay" onclick="toggleAdminSidebar()"></div>
+    
+    <!-- Mobile Sidebar Toggle Button -->
+    <button class="mobile-admin-toggle" id="mobileAdminToggle" onclick="toggleAdminSidebar()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
 
     <!-- Main Content -->
     <main class="admin-main">
@@ -2279,10 +2395,157 @@
     </div>
   </div>
 
+  <!-- Session Timeout Warning Modal -->
+  <div class="modal-overlay" id="session-timeout-modal" style="display:none;">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header">
+        <span class="modal-title">Session Expiring Soon</span>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:24px;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" stroke-width="2" style="margin-bottom:16px;">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12,6 12,12 16,14"/>
+        </svg>
+        <p style="margin-bottom:8px;">Your session will expire in <span id="session-countdown" style="font-weight:700;color:var(--admin-accent);">60</span> seconds.</p>
+        <p style="font-size:0.9rem;color:rgba(245,242,235,0.6);">Click "Stay Logged In" to continue your session.</p>
+      </div>
+      <div class="modal-footer" style="justify-content:center;gap:12px;">
+        <button class="btn btn-outline" onclick="handleSessionLogout()">Logout</button>
+        <button class="btn btn-primary" onclick="extendSession()">Stay Logged In</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // ===============================
+    // SESSION MANAGEMENT
+    // ===============================
+    const SESSION_TIMEOUT_MINUTES = 30; // Session timeout in minutes
+    const SESSION_WARNING_SECONDS = 60; // Show warning this many seconds before timeout
+    let sessionTimer = null;
+    let warningTimer = null;
+    let countdownInterval = null;
+    let lastActivity = Date.now();
+
+    function resetSessionTimer() {
+      lastActivity = Date.now();
+      
+      // Clear existing timers
+      if (sessionTimer) clearTimeout(sessionTimer);
+      if (warningTimer) clearTimeout(warningTimer);
+      if (countdownInterval) clearInterval(countdownInterval);
+      
+      // Hide warning modal if shown
+      const modal = document.getElementById('session-timeout-modal');
+      if (modal) modal.style.display = 'none';
+      
+      // Set warning timer (shows warning before timeout)
+      const warningTime = (SESSION_TIMEOUT_MINUTES * 60 - SESSION_WARNING_SECONDS) * 1000;
+      warningTimer = setTimeout(showSessionWarning, warningTime);
+      
+      // Set session timeout
+      sessionTimer = setTimeout(handleSessionTimeout, SESSION_TIMEOUT_MINUTES * 60 * 1000);
+    }
+
+    function showSessionWarning() {
+      const modal = document.getElementById('session-timeout-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        let countdown = SESSION_WARNING_SECONDS;
+        const countdownEl = document.getElementById('session-countdown');
+        
+        countdownInterval = setInterval(() => {
+          countdown--;
+          if (countdownEl) countdownEl.textContent = countdown;
+          if (countdown <= 0) {
+            clearInterval(countdownInterval);
+          }
+        }, 1000);
+      }
+    }
+
+    function handleSessionTimeout() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      showToast('Session expired. Please login again.', 'warning');
+      setTimeout(() => logout(), 1000);
+    }
+
+    function handleSessionLogout() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      logout();
+    }
+
+    function extendSession() {
+      resetSessionTimer();
+      showToast('Session extended successfully', 'success');
+    }
+
+    // Track user activity to reset session timer
+    ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+      document.addEventListener(event, () => {
+        // Only reset if more than 1 minute since last activity (avoid excessive resets)
+        if (Date.now() - lastActivity > 60000) {
+          resetSessionTimer();
+        }
+      }, { passive: true });
+    });
+
+    // Helper function to show toast notifications
+    function showToast(message, type = 'info') {
+      const existingToast = document.querySelector('.toast-notification');
+      if (existingToast) existingToast.remove();
+      
+      const toast = document.createElement('div');
+      toast.className = `toast-notification toast-${type}`;
+      toast.innerHTML = message;
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 12px 24px;
+        background: ${type === 'success' ? '#059669' : type === 'warning' ? '#D97706' : type === 'error' ? 'var(--admin-accent)' : '#333'};
+        color: white;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        z-index: 10000;
+        animation: toastSlideIn 0.3s ease;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
     // ===============================
     // AUTHENTICATION CHECK
     // ===============================
+    const API_URL = window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com';
+    
+    async function refreshAccessToken() {
+      const refreshToken = localStorage.getItem('scamshield_refresh_token');
+      if (!refreshToken) return false;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.access_token) {
+            localStorage.setItem('scamshield_access_token', data.access_token);
+            if (data.refresh_token) {
+              localStorage.setItem('scamshield_refresh_token', data.refresh_token);
+            }
+            return true;
+          }
+        }
+      } catch (e) {
+        console.error('Token refresh failed:', e);
+      }
+      return false;
+    }
+    
     (async function checkAdminAuth() {
       const token = localStorage.getItem('scamshield_access_token');
       
@@ -2294,12 +2557,26 @@
       
       try {
         // Verify token and get user info
-        const response = await fetch('http://localhost:8000/api/v1/users/me', {
+        let response = await fetch(`${API_URL}/api/v1/users/me`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
+        
+        // If 401, try to refresh token
+        if (response.status === 401) {
+          const refreshed = await refreshAccessToken();
+          if (refreshed) {
+            const newToken = localStorage.getItem('scamshield_access_token');
+            response = await fetch(`${API_URL}/api/v1/users/me`, {
+              headers: {
+                'Authorization': `Bearer ${newToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+          }
+        }
         
         if (!response.ok) {
           throw new Error('Invalid token');
@@ -2317,6 +2594,9 @@
         // Store user data for later use
         localStorage.setItem('scamshield_user', JSON.stringify(userData));
         
+        // Start session timer after successful auth
+        resetSessionTimer();
+        
       } catch (error) {
         console.error('Auth check failed:', error);
         localStorage.removeItem('scamshield_access_token');
@@ -2328,7 +2608,7 @@
     })();
     
     // Config
-    const API_BASE = 'http://localhost:8000/api/v1';
+    const API_BASE = (window.SCAMSHIELD_CONFIG?.API_URL || 'https://scamshield-api-hocl.onrender.com') + '/api/v1';
     let accessToken = localStorage.getItem('scamshield_access_token');
     let currentUser = null;
     let demoMode = false;
@@ -2358,36 +2638,11 @@
       backup: { auto: 'daily' }
     };
     
-    // Demo logs data
-    const demoLogs = [
-      { time: '2026-02-01 11:42:15', level: 'INFO', message: 'System started successfully' },
-      { time: '2026-02-01 11:42:16', level: 'INFO', message: 'MongoDB connection established' },
-      { time: '2026-02-01 11:42:17', level: 'INFO', message: 'AI providers initialized (Groq: OK, DeepSeek: OK)' },
-      { time: '2026-02-01 11:43:22', level: 'INFO', message: 'New user registration: john@example.com' },
-      { time: '2026-02-01 11:45:33', level: 'WARN', message: 'Rate limit warning: API key sk_live_xxx approaching limit' },
-      { time: '2026-02-01 11:47:12', level: 'INFO', message: 'Scam detected: phishing (confidence: 0.94)' },
-      { time: '2026-02-01 11:48:55', level: 'INFO', message: 'Session created: sess_abc123' },
-      { time: '2026-02-01 11:52:18', level: 'INFO', message: 'Intel extracted: phone number +91-9876543210' },
-      { time: '2026-02-01 11:55:42', level: 'ERROR', message: 'Webhook delivery failed: https://example.com/webhook (timeout)' },
-      { time: '2026-02-01 11:56:01', level: 'INFO', message: 'Webhook retry scheduled' },
-      { time: '2026-02-01 12:02:33', level: 'INFO', message: 'API key generated for user@company.com' },
-      { time: '2026-02-01 12:15:47', level: 'INFO', message: 'Model v3.5 deployment completed' },
-      { time: '2026-02-01 12:22:19', level: 'INFO', message: 'Health check passed: all services operational' },
-      { time: '2026-02-01 12:30:05', level: 'DEBUG', message: 'Cache cleared for session analytics' },
-      { time: '2026-02-01 12:35:18', level: 'WARN', message: 'High memory usage detected: 78%' },
-    ];
+    // Demo logs data - cleared (use API data only)
+    const demoLogs = [];
     
-    // Demo threats data
-    const demoThreats = [
-      { id: '1', time: '2026-02-01 12:30:00', type: 'phishing', source: '+91-9876543210', confidence: 0.94, severity: 'critical', status: 'blocked' },
-      { id: '2', time: '2026-02-01 12:25:00', type: 'tech_support', source: 'support@microsoft-help.fake', confidence: 0.89, severity: 'high', status: 'blocked' },
-      { id: '3', time: '2026-02-01 12:20:00', type: 'banking', source: '+1-555-BANK-NOW', confidence: 0.92, severity: 'critical', status: 'blocked' },
-      { id: '4', time: '2026-02-01 12:15:00', type: 'lottery', source: 'winner@lottery-prize.com', confidence: 0.78, severity: 'medium', status: 'pending' },
-      { id: '5', time: '2026-02-01 12:10:00', type: 'investment', source: '+44-20-7946-0958', confidence: 0.85, severity: 'high', status: 'blocked' },
-      { id: '6', time: '2026-02-01 12:05:00', type: 'phishing', source: 'security@paypa1.com', confidence: 0.97, severity: 'critical', status: 'blocked' },
-      { id: '7', time: '2026-02-01 12:00:00', type: 'romance', source: '+91-8765432109', confidence: 0.72, severity: 'medium', status: 'allowed' },
-      { id: '8', time: '2026-02-01 11:55:00', type: 'tech_support', source: '+1-800-WINDOWS', confidence: 0.91, severity: 'high', status: 'blocked' },
-    ];
+    // Demo threats data - cleared (use API data only)
+    const demoThreats = [];
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
@@ -2482,6 +2737,20 @@
         });
 
         if (response.status === 401) {
+          // Try to refresh token before logging out
+          const refreshed = await refreshAccessToken();
+          if (refreshed) {
+            accessToken = localStorage.getItem('scamshield_access_token');
+            // Retry the request with new token
+            const retryResponse = await fetch(`${API_BASE}${endpoint}`, {
+              ...options,
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}`, ...options.headers }
+            });
+            if (retryResponse.ok) {
+              demoMode = false;
+              return await retryResponse.json();
+            }
+          }
           logout();
           return null;
         }
@@ -2544,14 +2813,8 @@
       loadMetrics();
     }
 
-    // Demo users data
-    const demoUsers = [
-      { id: '1', email: 'admin@scamshield.io', full_name: 'Admin User', role: 'admin', is_active: true, is_verified: true, created_at: '2024-01-15T10:00:00Z', last_login: '2024-02-01T15:30:00Z' },
-      { id: '2', email: 'john.doe@example.com', full_name: 'John Doe', role: 'user', is_active: true, is_verified: true, created_at: '2024-01-20T08:00:00Z', last_login: '2024-02-01T09:45:00Z' },
-      { id: '3', email: 'sarah.connor@future.io', full_name: 'Sarah Connor', role: 'user', is_active: true, is_verified: true, created_at: '2024-01-22T14:30:00Z', last_login: '2024-01-31T18:20:00Z' },
-      { id: '4', email: 'test.user@mail.com', full_name: 'Test User', role: 'user', is_active: false, is_verified: false, created_at: '2024-01-25T11:00:00Z', last_login: null },
-      { id: '5', email: 'developer@scamshield.io', full_name: 'Developer Account', role: 'admin', is_active: true, is_verified: true, created_at: '2024-01-10T09:00:00Z', last_login: '2024-02-01T14:00:00Z' },
-    ];
+    // Demo users data - cleared (use API data only)
+    const demoUsers = [];
 
     // Load Users
     async function loadUsers() {
@@ -2838,13 +3101,8 @@
       }
     }
 
-    // Demo sessions data
-    const demoSessions = [
-      { session_id: 'sess_abc123def456', scam_type: 'Phishing', confidence: 0.92, message_count: 15, has_intel: true, status: 'active', created_at: '2024-02-01T10:30:00Z' },
-      { session_id: 'sess_xyz789ghi012', scam_type: 'Romance Scam', confidence: 0.85, message_count: 42, has_intel: true, status: 'escalated', created_at: '2024-01-31T14:00:00Z' },
-      { session_id: 'sess_mno345pqr678', scam_type: 'Tech Support', confidence: 0.78, message_count: 8, has_intel: false, status: 'completed', created_at: '2024-01-30T09:15:00Z' },
-      { session_id: 'sess_stu901vwx234', scam_type: 'Lottery', confidence: 0.95, message_count: 23, has_intel: true, status: 'active', created_at: '2024-01-29T16:45:00Z' },
-    ];
+    // Demo sessions data - cleared (use API data only)
+    const demoSessions = [];
 
     // Load Sessions
     async function loadSessions() {
@@ -3015,13 +3273,8 @@
       currentSessionId = null;
     }
 
-    // Demo scammers data
-    const demoScammers = [
-      { id: '1', fingerprint_hash: 'fp_8a3bc9d2e1f4', phone_count: 3, email_count: 5, total_sessions: 12, risk_score: 0.95, threat_level: 'high', first_seen: '2024-01-10T08:00:00Z' },
-      { id: '2', fingerprint_hash: 'fp_2x9yz7w5v3u1', phone_count: 1, email_count: 2, total_sessions: 4, risk_score: 0.72, threat_level: 'medium', first_seen: '2024-01-18T12:30:00Z' },
-      { id: '3', fingerprint_hash: 'fp_n4m6k8j2h1g9', phone_count: 5, email_count: 8, total_sessions: 28, risk_score: 0.98, threat_level: 'high', first_seen: '2024-01-05T06:15:00Z' },
-      { id: '4', fingerprint_hash: 'fp_q1w2e3r4t5y6', phone_count: 2, email_count: 1, total_sessions: 2, risk_score: 0.45, threat_level: 'low', first_seen: '2024-01-28T19:00:00Z' },
-    ];
+    // Demo scammers data - cleared (use API data only)
+    const demoScammers = [];
 
     // Load Scammers
     async function loadScammers() {
@@ -4021,6 +4274,65 @@
       document.getElementById('confirm-modal').classList.remove('active');
       confirmCallback = null;
     }
+    
+    // ===============================
+    // MOBILE SIDEBAR TOGGLE
+    // ===============================
+    function toggleAdminSidebar() {
+      const sidebar = document.querySelector('.admin-sidebar');
+      const overlay = document.getElementById('adminSidebarOverlay');
+      const toggle = document.getElementById('mobileAdminToggle');
+      
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        // Change toggle button icon
+        if (toggle) {
+          if (sidebar.classList.contains('active')) {
+            toggle.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            `;
+          } else {
+            toggle.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            `;
+          }
+        }
+        
+        // Prevent body scroll when sidebar is open
+        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+      }
+    }
+    
+    // Close admin sidebar when clicking a nav link (mobile)
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          toggleAdminSidebar();
+        }
+      });
+    });
+    
+    // Close admin sidebar on window resize if larger than mobile
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        const sidebar = document.querySelector('.admin-sidebar');
+        const overlay = document.getElementById('adminSidebarOverlay');
+        if (sidebar && overlay) {
+          sidebar.classList.remove('active');
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      }
+    });
     
     // ===============================
     // INITIALIZATION

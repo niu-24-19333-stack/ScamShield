@@ -5547,3 +5547,112 @@
     padding: 12px 10px;
   }
 }
+
+/* ========================================
+   MOBILE SIDEBAR ENHANCEMENT
+======================================== */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+.mobile-sidebar-toggle {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--danger), var(--danger-dark, #8B1528));
+  border: none;
+  border-radius: 50%;
+  color: white;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 24px rgba(196, 30, 58, 0.5);
+  z-index: 999;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-sidebar-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(196, 30, 58, 0.6);
+}
+
+.mobile-sidebar-toggle:active {
+  transform: scale(0.95);
+}
+
+.mobile-sidebar-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1001;
+  }
+  
+  .sidebar.active {
+    transform: translateX(0);
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.4);
+  }
+  
+  .dashboard-main {
+    margin-left: 0;
+  }
+  
+  .mobile-sidebar-toggle {
+    display: flex;
+    animation: floatPulse 3s ease-in-out infinite;
+  }
+  
+  @keyframes floatPulse {
+    0%, 100% {
+      transform: translateY(0);
+      box-shadow: 0 4px 24px rgba(196, 30, 58, 0.5);
+    }
+    50% {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 32px rgba(196, 30, 58, 0.6);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-sidebar-toggle {
+    width: 52px;
+    height: 52px;
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .mobile-sidebar-toggle svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .sidebar {
+    width: 260px;
+  }
+}

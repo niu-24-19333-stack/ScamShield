@@ -10,7 +10,7 @@ window.SCAMSHIELD_CONFIG = {
   API_URL: 'https://scamshield-api-hocl.onrender.com',  // Your deployed backend URL
   
   // OAuth Configuration
-  GOOGLE_CLIENT_ID: '18497359443-l6kelh3r10l45g60vuskqa74t5omossa.apps.googleusercontent.com',
+  GOOGLE_CLIENT_ID: '1064706061315-euungp6jbuki8tfhbaec9evlot75fqsr.apps.googleusercontent.com',
   
   // App Settings
   APP_NAME: 'ScamShield Pro',

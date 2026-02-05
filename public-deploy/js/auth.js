@@ -19,9 +19,24 @@ const GOOGLE_CLIENT_ID = '1064706061315-euungp6jbuki8tfhbaec9evlot75fqsr.apps.go
  */
 function redirectBasedOnRole(user = null) {
   const userData = user || api.getUser();
-  const isAdmin = userData && userData.role === 'admin';
-  const redirectUrl = isAdmin ? './admin.html' : './dashboard.html';
-  window.location.href = redirectUrl;
+  console.log('🎯 Redirecting user based on role:', userData);
+  
+  if (!userData) {
+    console.log('❌ No user data available, redirecting to login');
+    window.location.href = './login.html';
+    return;
+  }
+  
+  // Check if user has admin role
+  const isAdmin = userData && (userData.role === 'admin' || userData.role === 'ADMIN');
+  
+  if (isAdmin) {
+    console.log('👑 Admin user detected, redirecting to admin panel');
+    window.location.href = './admin.html';
+  } else {
+    console.log('👤 Regular user detected, redirecting to dashboard');
+    window.location.href = './dashboard.html';
+  }
 }
 
 /**
@@ -56,17 +71,46 @@ async function handleLogin(event) {
     // Call API
     const response = await api.login(email, password);
     
+    console.log('✅ Login API response received:', response.user?.email);
+    
+    // Verify tokens were stored properly
+    const storedToken = localStorage.getItem('scamshield_access_token');
+    const storedUser = localStorage.getItem('scamshield_user');
+    
+    if (!storedToken || !storedUser) {
+      console.error('❌ Token or user data not stored properly');
+      throw new Error('Authentication data not saved properly');
+    }
+    
+    console.log('✅ Authentication data stored successfully');
     showToast('Login successful! Redirecting...', 'success');
     
-    // Check user role and redirect accordingly
+    // Get user data for role-based redirect
     const user = response.user || api.getUser();
+    console.log('🔄 Redirecting user with role:', user?.role);
     
+    // Add delay to ensure all storage operations complete
     setTimeout(() => {
       redirectBasedOnRole(user);
-    }, 1000);
+    }, 250);
     
   } catch (error) {
-    showToast(error.message || 'Login failed. Please check your credentials.', 'error');
+    console.error('Login error:', error);
+    
+    // Extract error message properly
+    let errorMessage = 'Login failed. Please check your credentials.';
+    
+    if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error.message) {
+      errorMessage = error.message;
+    } else if (error.detail) {
+      errorMessage = error.detail;
+    } else if (error.error) {
+      errorMessage = error.error;
+    }
+    
+    showToast(errorMessage, 'error');
     
     // Reset button
     submitBtn.disabled = false;
@@ -106,7 +150,6 @@ async function handleSignup(event) {
     return;
   }
   
-  // Check for uppercase, lowercase, and digit
   if (!/[A-Z]/.test(password)) {
     showToast('Password must contain at least one uppercase letter', 'error');
     return;
@@ -135,12 +178,28 @@ async function handleSignup(event) {
     // Call API
     const response = await api.register(email, password, fullName, phone);
     
+    console.log('✅ Registration API response received:', response.user?.email);
+    
+    // Verify tokens were stored properly
+    const storedToken = localStorage.getItem('scamshield_access_token');
+    const storedUser = localStorage.getItem('scamshield_user');
+    
+    if (!storedToken || !storedUser) {
+      console.error('❌ Token or user data not stored properly during registration');
+      throw new Error('Registration completed but authentication data not saved');
+    }
+    
+    console.log('✅ Registration and authentication data stored successfully');
     showToast('Account created successfully! Redirecting...', 'success');
     
-    // Redirect to dashboard
+    // Check user role and redirect accordingly
+    const user = response.user || api.getUser();
+    console.log('🔄 Redirecting new user with role:', user?.role);
+    
+    // Add delay to ensure all storage operations complete
     setTimeout(() => {
-      window.location.href = './dashboard.html';
-    }, 1000);
+      redirectBasedOnRole(user);
+    }, 250);
     
   } catch (error) {
     showToast(error.message || 'Registration failed. Please try again.', 'error');
