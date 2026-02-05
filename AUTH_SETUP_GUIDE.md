@@ -21,7 +21,7 @@ Your backend uses the **wrong Google Client ID**. To fix Google OAuth:
 
 ```
 GOOGLE_CLIENT_ID=1064706061315-euungp6jbuki8tfhbaec9evlot75fqsr.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=<your-client-secret-from-google-console>
+GOOGLE_CLIENT_SECRET=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
 GOOGLE_REDIRECT_URI=https://scamshield-api-hocl.onrender.com/api/v1/auth/google/callback
 ```
 
